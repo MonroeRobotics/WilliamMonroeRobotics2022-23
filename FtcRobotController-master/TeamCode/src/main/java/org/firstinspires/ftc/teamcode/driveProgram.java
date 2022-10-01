@@ -1,7 +1,7 @@
 /*
 
 Code written by the William Monroe Robotics Team
-Copyright&copy; 2022All Rights Reserved*
+Copyright&copy; 2022 All Rights Reserved*
 
  */
 
@@ -70,6 +70,6 @@ public class driveProgram extends OpMode {
         frontRight.setPower(fRight);
         backLeft.setPower(bLeft);
         backRight.setPower(bRight);
-    //endregion
+        //endregion
     }
 }
