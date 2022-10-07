@@ -90,6 +90,7 @@ public class driveProgram extends OpMode {
                     // Add each element into the list
                     powerList.add(i);
                 }
+
         maxPower = Collections.max(powerList);
 
                 if (maxPower > 1 || maxPower < 1) {
@@ -102,8 +103,7 @@ public class driveProgram extends OpMode {
 
 
         //region setPower
-
-
+        telemetry.addData("Test", powerArray);
         frontLeft.setPower(fLeft);
         frontRight.setPower(-fRight);
         backLeft.setPower(bLeft);
