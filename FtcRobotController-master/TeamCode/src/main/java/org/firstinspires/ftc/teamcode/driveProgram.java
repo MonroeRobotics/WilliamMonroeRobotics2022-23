@@ -71,10 +71,6 @@ public class driveProgram extends OpMode {
         bRight = Math.sin(direction+1.0/4.0*Math.PI) * magnitude + turn;
 
 
-
-
-
-
         //endregion
 
         // List<Double> powerList = new ArrayList<>();
@@ -103,11 +99,17 @@ public class driveProgram extends OpMode {
 
 
         //region setPower
-        telemetry.addData("Test", powerArray);
-        frontLeft.setPower(fLeft);
-        frontRight.setPower(-fRight);
-        backLeft.setPower(bLeft);
-        backRight.setPower(-bRight);
+        telemetry.addData("Front Left: ", fLeft);
+        telemetry.addData("Front Right: ", fLeft);
+        telemetry.addData("Back Left: ", fLeft);
+        telemetry.addData("Back Right: ", fLeft);
+
+        frontLeft.setPower(-fLeft);
+        frontRight.setPower(fRight);
+        backLeft.setPower(-bLeft);
+        backRight.setPower(bRight);
+
+        telemetry.update();
 
         //endregion
     }
