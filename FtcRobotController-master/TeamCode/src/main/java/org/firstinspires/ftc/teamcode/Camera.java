@@ -187,7 +187,7 @@ public class ConceptTensorFlowObjectDetectionSwitchableCameras extends LinearOpM
      */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-            "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
         tfodParameters.minResultConfidence = 0.75f;
         tfodParameters.isModelTensorFlow2 = true;
@@ -221,5 +221,4 @@ public class ConceptTensorFlowObjectDetectionSwitchableCameras extends LinearOpM
             telemetry.addData("Press LeftBumper", "to switch to Webcam 1");
         }
     }
-
 }
