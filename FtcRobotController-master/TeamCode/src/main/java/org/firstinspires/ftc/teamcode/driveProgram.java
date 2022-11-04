@@ -57,10 +57,10 @@ public class driveProgram extends OpMode {
     public void loop(){
         //region Calculations
         rightStick_X = gamepad1.right_stick_x;
-        rightStick_Y = gamepad1.right_stick_y;
+        rightStick_Y = gamepad1.right_stick_y ;
         leftStick_X = gamepad1.left_stick_x;
-        leftStick_Y = gamepad1.left_stick_y;
-        turn = rightStick_X;
+        leftStick_Y = gamepad1.left_stick_y * -1;
+        turn = gamepad1.right_stick_x;
 
         magnitude = Math.sqrt(Math.pow(leftStick_X, 2) + Math.pow(leftStick_Y, 2));
 
@@ -104,8 +104,8 @@ public class driveProgram extends OpMode {
         telemetry.addData("Back Left: ", fLeft);
         telemetry.addData("Back Right: ", fLeft);
 
-        frontLeft.setPower(-fLeft);
-        frontRight.setPower(fRight);
+        frontLeft.setPower(fLeft);
+        frontRight.setPower(-fRight);
         backLeft.setPower(-bLeft);
         backRight.setPower(bRight);
 
