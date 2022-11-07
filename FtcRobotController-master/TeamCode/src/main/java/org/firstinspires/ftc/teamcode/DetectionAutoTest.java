@@ -29,8 +29,11 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import java.util.ArrayList;
+import java.util.List;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -50,8 +53,8 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "Concept: TensorFlow Object Detection Webcam", group = "Concept")
-public class TensorFlowWebcamConcept extends LinearOpMode {
+@TeleOp(name = "Concept: DetectionAutoTest", group = "Concept")
+public class DetectionAutoTest extends LinearOpMode {
 
     /*
      * Specify the source for the Tensor Flow Model.
@@ -97,6 +100,8 @@ public class TensorFlowWebcamConcept extends LinearOpMode {
      */
     private TFObjectDetector tfod;
 
+    DcMotor motor1 = hardwareMap.get(DcMotor.class, "frontRight");
+
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
@@ -124,19 +129,24 @@ public class TensorFlowWebcamConcept extends LinearOpMode {
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
         waitForStart();
-
+        List<String> dectionList = new ArrayList();
         if (opModeIsActive()) {
             while (opModeIsActive()) {
+
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
                     List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+
                     if (updatedRecognitions != null) {
                         telemetry.addData("# Objects Detected", updatedRecognitions.size());
+
+                        dectionList = new ArrayList();
 
                         // step through the list of recognitions and display image position/size information for each one
                         // Note: "Image number" refers to the randomized image orientation/number
                         for (Recognition recognition : updatedRecognitions) {
+                            dectionList.add(recognition.getLabel());
                             double col = (recognition.getLeft() + recognition.getRight()) / 2 ;
                             double row = (recognition.getTop()  + recognition.getBottom()) / 2 ;
                             double width  = Math.abs(recognition.getRight() - recognition.getLeft()) ;
@@ -147,9 +157,17 @@ public class TensorFlowWebcamConcept extends LinearOpMode {
                             telemetry.addData("- Position (Row/Col)","%.0f / %.0f", row, col);
                             telemetry.addData("- Size (Width/Height)","%.0f / %.0f", width, height);
                         }
+
                         telemetry.update();
                     }
                 }
+                if (dectionList.contains("1 Bolt")){
+                    motor1.setPower(1.0);
+                }
+                else{
+                    motor1.setPower(0);
+                }
+
             }
         }
     }
