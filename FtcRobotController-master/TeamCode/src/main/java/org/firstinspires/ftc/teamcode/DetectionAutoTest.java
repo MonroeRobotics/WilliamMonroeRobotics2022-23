@@ -100,12 +100,13 @@ public class DetectionAutoTest extends LinearOpMode {
      */
     private TFObjectDetector tfod;
 
-    DcMotor motor1 = hardwareMap.get(DcMotor.class, "frontRight");
+    DcMotor motor1;
 
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
+        motor1 = hardwareMap.get(DcMotor.class, "frontRight");
         initVuforia();
         initTfod();
 
