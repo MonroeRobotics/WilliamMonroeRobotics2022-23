@@ -11,10 +11,10 @@ import java.util.Timer;
 @TeleOp(name="Linear Slide Test", group="Concept")
 public class linearSlideTest extends OpMode {
 
-    Timer countdown;
     DcMotorEx rightSlide;
     DcMotorEx leftSlide;
     systemTimer systemTimer;
+    int stage = 0;
 
     @Override
     public void init(){
@@ -37,10 +37,19 @@ public class linearSlideTest extends OpMode {
             rightSlide.setVelocity(1000);
             leftSlide.setVelocity(1000);
         }
-        else{
+        else if (stage > 0){
             rightSlide.setVelocity(0);
             leftSlide.setVelocity(0);
         }
-        systemTimer.startTimer(4);
+        if (gamepad1.a && stage == 0) {
+            systemTimer.startTimer(4);
+            stage++;
+        }
+
+        if((systemTimer.check()) && stage == 1) {
+            //do something
+        }
     }
+
+
 }
