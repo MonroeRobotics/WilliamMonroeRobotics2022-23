@@ -15,7 +15,7 @@ import java.lang.Math;
 import java.util.stream.*;
 import java.util.*;
 
-@TeleOp(name="Drive Program")
+@TeleOp(name="Drive Program", group="Main")
 public class driveProgram extends OpMode {
 
     //region Declarations

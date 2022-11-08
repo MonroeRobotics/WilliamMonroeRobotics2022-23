@@ -7,7 +7,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-@TeleOp(name = "DriveOld", group = "Main")
+@TeleOp(name = "Drive Old", group = "Main")
 // Wheel Movement
 public class driveProgramOld extends LinearOpMode {
 
