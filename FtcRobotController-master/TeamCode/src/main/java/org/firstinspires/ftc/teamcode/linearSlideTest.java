@@ -18,14 +18,21 @@ public class linearSlideTest extends OpMode {
 
     @Override
     public void init(){
-        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
-
+        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
     }
 
     @Override
     public void loop(){
-        if (gamepad1.dpad_up){
+        int rightSlidePos = rightSlide.getCurrentPosition();
+        int leftSlidePos = leftSlide.getCurrentPosition();
+        /*if (gamepad1.dpad_up){
             rightSlide.setDirection(DcMotorSimple.Direction.FORWARD);
             leftSlide.setDirection(DcMotorSimple.Direction.REVERSE);
             rightSlide.setVelocity(1000);
@@ -48,7 +55,10 @@ public class linearSlideTest extends OpMode {
 
         if((systemTimer.check()) && stage == 1) {
             //do something
-        }
+        }*/
+        telemetry.addData("right slide", rightSlidePos);
+        telemetry.addData("left slide", leftSlidePos);
+        telemetry.update();
     }
 
 

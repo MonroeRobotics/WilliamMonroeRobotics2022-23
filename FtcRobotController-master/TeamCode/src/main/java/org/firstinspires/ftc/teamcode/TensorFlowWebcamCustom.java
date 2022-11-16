@@ -51,7 +51,7 @@ import java.util.List;
  * is explained below.
  */
 @TeleOp(name = "Concept: TensorFlow Object Detection Webcam", group = "Concept")
-public class TensorFlowWebcamConcept extends LinearOpMode {
+public class TensorFlowWebcamCustom extends LinearOpMode {
 
     /*
      * Specify the source for the Tensor Flow Model.
