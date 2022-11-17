@@ -23,40 +23,48 @@ public class linearSlideTest extends OpMode {
     @Override
     public void init(){
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
-//        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
+        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//
         rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         leftArmServo = hardwareMap.get(Servo.class, "leftArmServo");
         rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
         clawServo = hardwareMap.get(Servo.class, "clawServo");
-        clawServo.setPosition(0);
+        rightSlide.setTargetPosition(-80);
+        leftSlide.setTargetPosition(-80);
+        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightSlide.setPower(0.4);
+        leftSlide.setPower(0.4);
+
+        clawServo.setPosition(0.5);
+        //-1000
     }
 
     @Override
     public void loop(){
         int rightSlidePos = rightSlide.getCurrentPosition();
         int leftSlidePos = leftSlide.getCurrentPosition();
-        /*if (gamepad1.dpad_up){
-            rightSlide.setDirection(DcMotorSimple.Direction.FORWARD);
-            leftSlide.setDirection(DcMotorSimple.Direction.REVERSE);
-            rightSlide.setVelocity(1000);
-            leftSlide.setVelocity(1000);
+        if (gamepad1.dpad_up){
+            rightSlide.setTargetPosition(-800);
+            leftSlide.setTargetPosition(-800);
         }
         else if (gamepad1.dpad_down){
-            rightSlide.setDirection(DcMotorSimple.Direction.REVERSE);
-            leftSlide.setDirection(DcMotorSimple.Direction.FORWARD);
-            rightSlide.setVelocity(1000);
-            leftSlide.setVelocity(1000);
+            rightSlide.setTargetPosition(-80);
+            leftSlide.setTargetPosition(-80);
         }
-        else if (stage > 0){
-            rightSlide.setVelocity(0);
-            leftSlide.setVelocity(0);
+
+        if (gamepad1.a){
+            clawServo.setPosition(.1);
         }
-        if (gamepad1.a && stage == 0) {
+        else if (gamepad1.b){
+            clawServo.setPosition(.3);
+        }
+
+       /* if (gamepad1.a && stage == 0) {
             systemTimer.startTimer(4);
             stage++;
         }
