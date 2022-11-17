@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.Servo;
 
 import java.util.Timer;
 
@@ -13,19 +14,26 @@ public class linearSlideTest extends OpMode {
 
     DcMotorEx rightSlide;
     DcMotorEx leftSlide;
+    Servo leftArmServo;
+    Servo rightArmServo;
+    Servo clawServo;
     systemTimer systemTimer;
     int stage = 0;
 
     @Override
     public void init(){
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
-        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
+        rightSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftArmServo = hardwareMap.get(Servo.class, "leftArmServo");
+        rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
+        clawServo = hardwareMap.get(Servo.class, "clawServo");
+        clawServo.setPosition(0);
     }
 
     @Override
