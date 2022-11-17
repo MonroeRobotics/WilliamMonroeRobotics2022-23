@@ -55,8 +55,8 @@ public class linearSlideTest extends OpMode {
         int rightSlidePos = rightSlide.getCurrentPosition();
         int leftSlidePos = leftSlide.getCurrentPosition();
         if (gamepad1.dpad_up){
-            rightSlide.setTargetPosition(-800);
-            leftSlide.setTargetPosition(-800);
+            rightSlide.setTargetPosition(-1000);
+            leftSlide.setTargetPosition(-1000);
         }
         else if (gamepad1.dpad_down){
             rightSlide.setTargetPosition(-40);
@@ -75,7 +75,7 @@ public class linearSlideTest extends OpMode {
             clawServo.setPosition(.34);
         }
         else if(gamepad1.x){
-            leftArmServo.setPosition(.67);
+            leftArmServo.setPosition(.72);
             rightArmServo.setPosition(.3);
             clawServo.setPosition(.34);
         }
