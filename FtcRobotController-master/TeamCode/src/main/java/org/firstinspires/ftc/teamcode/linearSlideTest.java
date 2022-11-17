@@ -33,14 +33,20 @@ public class linearSlideTest extends OpMode {
         leftArmServo = hardwareMap.get(Servo.class, "leftArmServo");
         rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
         clawServo = hardwareMap.get(Servo.class, "clawServo");
-        rightSlide.setTargetPosition(-80);
-        leftSlide.setTargetPosition(-80);
+
+        clawServo.setPosition(0.34);
+
+        leftArmServo.setPosition(0);
+        rightArmServo.setPosition(1);
+
+        rightSlide.setTargetPosition(-40);
+        leftSlide.setTargetPosition(-40);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.4);
         leftSlide.setPower(0.4);
 
-        clawServo.setPosition(0.5);
+
         //-1000
     }
 
@@ -53,15 +59,25 @@ public class linearSlideTest extends OpMode {
             leftSlide.setTargetPosition(-800);
         }
         else if (gamepad1.dpad_down){
-            rightSlide.setTargetPosition(-80);
-            leftSlide.setTargetPosition(-80);
+            rightSlide.setTargetPosition(-40);
+            leftSlide.setTargetPosition(-40);
         }
 
         if (gamepad1.a){
-            clawServo.setPosition(.1);
+            clawServo.setPosition(.45);
         }
         else if (gamepad1.b){
-            clawServo.setPosition(.3);
+            clawServo.setPosition(.34);
+        }
+        if(gamepad1.y){
+            leftArmServo.setPosition(0);
+            rightArmServo.setPosition(1);
+            clawServo.setPosition(.34);
+        }
+        else if(gamepad1.x){
+            leftArmServo.setPosition(.67);
+            rightArmServo.setPosition(.3);
+            clawServo.setPosition(.34);
         }
 
        /* if (gamepad1.a && stage == 0) {
