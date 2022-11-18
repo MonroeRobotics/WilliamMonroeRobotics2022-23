@@ -89,10 +89,12 @@ public class driveProgram extends OpMode {
 
         maxPower = Collections.max(powerList);
 
+                // Scaling power
                 if (maxPower > 1 || maxPower < 1) {
                     for (double i : powerArray){
-                        i = i / maxPower;
+                        i = i / Math.abs(maxPower);
                     }
+
                 }
 
 
@@ -104,10 +106,10 @@ public class driveProgram extends OpMode {
         telemetry.addData("Back Left: ", fLeft);
         telemetry.addData("Back Right: ", fLeft);
 
-        frontLeft.setPower(fLeft);
-        frontRight.setPower(-fRight);
-        backLeft.setPower(-bLeft);
-        backRight.setPower(bRight);
+        frontLeft.setPower(powerList.get(2));
+        frontRight.setPower(powerList.get(0));
+        backLeft.setPower(powerList.get(1));
+        backRight.setPower(powerList.get(3));
 
         telemetry.update();
 
