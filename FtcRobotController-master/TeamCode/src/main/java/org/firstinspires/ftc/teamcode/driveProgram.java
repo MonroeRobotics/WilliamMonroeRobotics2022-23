@@ -101,14 +101,14 @@ public class driveProgram extends OpMode {
 
 
         //region setPower
-        telemetry.addData("Front Left: ", fLeft);
-        telemetry.addData("Front Right: ", fLeft);
-        telemetry.addData("Back Left: ", fLeft);
-        telemetry.addData("Back Right: ", fLeft);
+        telemetry.addData("Front Left: ", powerList.get(2));
+        telemetry.addData("Front Right: ", powerList.get(0));
+        telemetry.addData("Back Left: ", powerList.get(1));
+        telemetry.addData("Back Right: ", powerList.get(3));
 
         frontLeft.setPower(powerList.get(2));
         frontRight.setPower(powerList.get(0));
-        backLeft.setPower(powerList.get(1));
+        backLeft.setPower(-powerList.get(1));
         backRight.setPower(powerList.get(3));
 
         telemetry.update();
