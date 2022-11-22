@@ -5,11 +5,9 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-
-@TeleOp(name = "Drive Old", group = "Main")
+@TeleOp(name = "driveShaft", group = "Concept")
 // Wheel Movement
-public class driveProgramOld extends LinearOpMode {
+public class driveShaft extends LinearOpMode {
 
     public void runOpMode() {
         //region Variables Setup
@@ -80,15 +78,15 @@ public class driveProgramOld extends LinearOpMode {
             leftstickX = this.gamepad1.left_stick_x;
             leftstickY = -this.gamepad1.left_stick_y;
 
-            turn = -this.gamepad1.right_stick_x;
+            turn = this.gamepad1.right_stick_x;
             //region Math For Wheel Movement
             direction = Math.atan2(leftstickY, leftstickX);
             magnitude = Math.sqrt(Math.pow(leftstickX, 2) + Math.pow(leftstickY, 2)) * 1.5;
 
-            fRight = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            bLeft = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            bRight = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            fLeft = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
 
             /*
             if (fRight > 1 || fRight < -1){
