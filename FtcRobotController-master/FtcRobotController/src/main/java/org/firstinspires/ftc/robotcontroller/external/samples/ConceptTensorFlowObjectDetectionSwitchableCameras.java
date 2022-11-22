@@ -221,5 +221,4 @@ public class ConceptTensorFlowObjectDetectionSwitchableCameras extends LinearOpM
             telemetry.addData("Press LeftBumper", "to switch to Webcam 1");
         }
     }
-
 }
