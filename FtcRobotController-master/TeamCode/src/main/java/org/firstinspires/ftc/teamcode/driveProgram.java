@@ -59,7 +59,7 @@ public class driveProgram extends LinearOpMode {
         //endregion
 
         //region Slide Init
-        clawServo.setPosition(0.34);
+        clawServo.setPosition(0.29);
 
         leftArmServo.setPosition(0);
         rightArmServo.setPosition(1);
@@ -97,7 +97,7 @@ public class driveProgram extends LinearOpMode {
                     dPMotor = true;
                 }
             } else if (this.gamepad1.dpad_down && motorSpeed > 1000) {
-                if (dPMotor == false) {
+                if (!dPMotor) {
                     motorSpeed = motorSpeed - 1000;
                     dPMotor = true;
                 }
@@ -150,8 +150,8 @@ public class driveProgram extends LinearOpMode {
             }
 
             if (slidePos ==  3){
-                rightSlide.setTargetPosition(-1100);
-                leftSlide.setTargetPosition(-1100);
+                rightSlide.setTargetPosition(-1050);
+                leftSlide.setTargetPosition(-1050);
             }
             else if (slidePos ==  2){
                 rightSlide.setTargetPosition(-480);
@@ -172,17 +172,17 @@ public class driveProgram extends LinearOpMode {
                 clawServo.setPosition(.45);
             }
             else if (gamepad2.b){
-                clawServo.setPosition(.34);
+                clawServo.setPosition(.29);
             }
             if(gamepad2.y){
                 leftArmServo.setPosition(0);
                 rightArmServo.setPosition(1);
-                clawServo.setPosition(.34);
+                clawServo.setPosition(.28);
             }
             else if(gamepad2.x){
                 leftArmServo.setPosition(.72);
                 rightArmServo.setPosition(.3);
-                clawServo.setPosition(.34);
+                clawServo.setPosition(.28);
             }
             //endregion
 
