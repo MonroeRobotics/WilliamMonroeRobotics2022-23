@@ -58,6 +58,7 @@ public class driveProgram extends LinearOpMode {
 
         //endregion
 
+        //region Slide Init
         clawServo.setPosition(0.34);
 
         leftArmServo.setPosition(0);
