@@ -1,9 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Core;
@@ -45,7 +45,7 @@ public class AutoTest extends OpMode {
 
     @Override
     public void loop(){
-
+        telemetry.update();
     }
 
     class examplePipeline extends OpenCvPipeline {
@@ -62,53 +62,34 @@ public class AutoTest extends OpMode {
         Scalar rectColor2 = new Scalar(255.0, 255.0, 0.0);
         Scalar rectColor3 = new Scalar(255.0, 0.0, 255.0);
 
-        public Mat processFrame(Mat input){
+        public Mat processFrame(Mat input) {
 
             Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
-            telemetry.addLine("pipline running");
+            telemetry.addLine("pipeline running");
 
             Rect leftRect = new Rect(1, 140, 269, 79);
             Rect rightRect = new Rect(370, 140, 269, 79);
             Rect centerRect = new Rect(270, 140, 99, 79);
 
-            input.copyTo(outPut);
-            Imgproc.rectangle(outPut, leftRect, rectColor1, 2);
-            Imgproc.rectangle(outPut, rightRect, rectColor2, 2);
-            Imgproc.rectangle(outPut, centerRect, rectColor3, 2);
-            Imgproc.cvtColor(outPut, HSV, Imgproc.COLOR_RGB2HSV);
+
+
+            Scalar lowHSV = new Scalar(0.0,0.0,0.0);
+            Scalar highHSV = new Scalar(255.0,255.0,255.0);
+            Mat thresh = new Mat();
+
+            Core.inRange(input, new Scalar(255.0,255.0,255.0), new Scalar(0.0,0.0,0.0), thresh);
 
             leftCrop = HSV.submat(leftRect);
             rightCrop = HSV.submat(rightRect);
             centerCrop = HSV.submat(centerRect);
 
-            Core.extractChannel(leftCrop, leftCrop, 1);
-            Core.extractChannel(rightCrop, rightCrop, 1);
 
-            Scalar leftavg = Core.mean(leftCrop);
-            Scalar rightavg = Core.mean(rightCrop);
-            Scalar centeravg = Core.mean(centerCrop);
+            thresh.copyTo(outPut);
+            Imgproc.rectangle(outPut, leftRect, rectColor1, 2);
+            Imgproc.rectangle(outPut, rightRect, rectColor2, 2);
+            Imgproc.rectangle(outPut, centerRect, rectColor3, 2);
 
-            leftavgfin = leftavg.val[0];
-            rightavgfin = rightavg.val[0];
-            centeravgfin = centeravg.val[0];
-
-            telemetry.addData("Left avg:", leftavgfin);
-            telemetry.addData("Right avg:", rightavgfin);
-            telemetry.addData("Center avg:", centeravgfin);
-
-
-            if (centeravgfin < leftavgfin || centeravgfin < rightavgfin) {
-                if (leftavgfin > rightavgfin) {
-                    telemetry.addLine("Left");
-                } else {
-                    telemetry.addLine("right");
-                }
-            }
-            else{
-                telemetry.addLine("center");
-            }
-
-            return(outPut);
+            return outPut;
         }
     }
 }
