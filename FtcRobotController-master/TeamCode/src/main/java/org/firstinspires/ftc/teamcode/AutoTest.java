@@ -2,11 +2,14 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
@@ -16,202 +19,96 @@ import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
 
 @Autonomous(name="Auto Test", group="Concept")
-public class AutoTest extends LinearOpMode {
-    OpenCvWebcam webcam;
+public class AutoTest extends OpMode {
+    OpenCvWebcam webcam = null;
 
     @Override
-    public void runOpMode() {
-        /*
-         * Instantiate an OpenCvCamera object for the camera we'll be using.
-         * In this sample, we're using a webcam. Note that you will need to
-         * make sure you have added the webcam to your configuration file and
-         * adjusted the name here to match what you named it in said config file.
-         *
-         * We pass it the view that we wish to use for camera monitor (on
-         * the RC phone). If no camera monitor is desired, use the alternate
-         * single-parameter constructor instead (commented out below)
-         */
+    public void init(){
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam"), cameraMonitorViewId);
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
 
-        // OR...  Do Not Activate the Camera Monitor View
-        //webcam = OpenCvCameraFactory.getInstance().createWebcam(hardwareMap.get(WebcamName.class, "Webcam 1"));
+        webcam.setPipeline(new examplePipeline());
 
-        /*
-         * Specify the image processing pipeline we wish to invoke upon receipt
-         * of a frame from the camera. Note that switching pipelines on-the-fly
-         * (while a streaming session is in flight) *IS* supported.
-         */
-        webcam.setPipeline(new SamplePipeline());
-
-        /*
-         * Open the connection to the camera device. New in v1.4.0 is the ability
-         * to open the camera asynchronously, and this is now the recommended way
-         * to do it. The benefits of opening async include faster init time, and
-         * better behavior when pressing stop during init (i.e. less of a chance
-         * of tripping the stuck watchdog)
-         *
-         * If you really want to open synchronously, the old method is still available.
-         */
-        webcam.setMillisecondsPermissionTimeout(2500); // Timeout for obtaining permission is configurable. Set before opening.
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                /*
-                 * Tell the webcam to start streaming images to us! Note that you must make sure
-                 * the resolution you specify is supported by the camera. If it is not, an exception
-                 * will be thrown.
-                 *
-                 * Keep in mind that the SDK's UVC driver (what OpenCvWebcam uses under the hood) only
-                 * supports streaming from the webcam in the uncompressed YUV image format. This means
-                 * that the maximum resolution you can stream at and still get up to 30FPS is 480p (640x480).
-                 * Streaming at e.g. 720p will limit you to up to 10FPS and so on and so forth.
-                 *
-                 * Also, we specify the rotation that the webcam is used in. This is so that the image
-                 * from the camera sensor can be rotated such that it is always displayed with the image upright.
-                 * For a front facing camera, rotation is defined assuming the user is looking at the screen.
-                 * For a rear facing camera or a webcam, rotation is defined assuming the camera is facing
-                 * away from the user.
-                 */
-                webcam.startStreaming(320, 240, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(640,360, OpenCvCameraRotation.UPRIGHT);
             }
 
             @Override
             public void onError(int errorCode) {
-                /*
-                 * This will be called if the camera could not be opened
-                 */
+
             }
         });
-
-        telemetry.addLine("Waiting for start");
-        telemetry.update();
-
-        /*
-         * Wait for the user to press start on the Driver Station
-         */
-        waitForStart();
-
-        while (opModeIsActive()) {
-            /*
-             * Send some stats to the telemetry
-             */
-            telemetry.addData("Frame Count", webcam.getFrameCount());
-            telemetry.addData("FPS", String.format("%.2f", webcam.getFps()));
-            telemetry.addData("Total frame time ms", webcam.getTotalFrameTimeMs());
-            telemetry.addData("Pipeline time ms", webcam.getPipelineTimeMs());
-            telemetry.addData("Overhead time ms", webcam.getOverheadTimeMs());
-            telemetry.addData("Theoretical max FPS", webcam.getCurrentPipelineMaxFps());
-            telemetry.update();
-
-            /*
-             * NOTE: stopping the stream from the camera early (before the end of the OpMode
-             * when it will be automatically stopped for you) *IS* supported. The "if" statement
-             * below will stop streaming from the camera when the "A" button on gamepad 1 is pressed.
-             */
-            if (gamepad1.a) {
-                /*
-                 * IMPORTANT NOTE: calling stopStreaming() will indeed stop the stream of images
-                 * from the camera (and, by extension, stop calling your vision pipeline). HOWEVER,
-                 * if the reason you wish to stop the stream early is to switch use of the camera
-                 * over to, say, Vuforia or TFOD, you will also need to call closeCameraDevice()
-                 * (commented out below), because according to the Android Camera API documentation:
-                 *         "Your application should only have one Camera object active at a time for
-                 *          a particular hardware camera."
-                 *
-                 * NB: calling closeCameraDevice() will internally call stopStreaming() if applicable,
-                 * but it doesn't hurt to call it anyway, if for no other reason than clarity.
-                 *
-                 * NB2: if you are stopping the camera stream to simply save some processing power
-                 * (or battery power) for a short while when you do not need your vision pipeline,
-                 * it is recommended to NOT call closeCameraDevice() as you will then need to re-open
-                 * it the next time you wish to activate your vision pipeline, which can take a bit of
-                 * time. Of course, this comment is irrelevant in light of the use case described in
-                 * the above "important note".
-                 */
-                webcam.stopStreaming();
-                //webcam.closeCameraDevice();
-            }
-
-            /*
-             * For the purposes of this sample, throttle ourselves to 10Hz loop to avoid burning
-             * excess CPU cycles for no reason. (By default, telemetry is only sent to the DS at 4Hz
-             * anyway). Of course in a real OpMode you will likely not want to do this.
-             */
-            sleep(100);
-        }
     }
-    class SamplePipeline extends OpenCvPipeline
-    {
-        boolean viewportPaused;
 
-        /*
-         * NOTE: if you wish to use additional Mat objects in your processing pipeline, it is
-         * highly recommended to declare them here as instance variables and re-use them for
-         * each invocation of processFrame(), rather than declaring them as new local variables
-         * each time through processFrame(). This removes the danger of causing a memory leak
-         * by forgetting to call mat.release(), and it also reduces memory pressure by not
-         * constantly allocating and freeing large chunks of memory.
-         */
+    @Override
+    public void loop(){
 
-        @Override
-        public Mat processFrame(Mat input)
-        {
-            /*
-             * IMPORTANT NOTE: the input Mat that is passed in as a parameter to this method
-             * will only dereference to the same image for the duration of this particular
-             * invocation of this method. That is, if for some reason you'd like to save a copy
-             * of this particular frame for later use, you will need to either clone it or copy
-             * it to another Mat.
-             */
+    }
 
-            /*
-             * Draw a simple box around the middle 1/2 of the entire frame
-             */
-            Imgproc.rectangle(
-                    input,
-                    new Point(
-                            input.cols()/4,
-                            input.rows()/4),
-                    new Point(
-                            input.cols()*(3f/4f),
-                            input.rows()*(3f/4f)),
-                    new Scalar(0, 255, 0), 4);
+    class examplePipeline extends OpenCvPipeline {
 
-            /**
-             * NOTE: to see how to get data from your pipeline to your OpMode as well as how
-             * to change which stage of the pipeline is rendered to the viewport when it is
-             * tapped, please see {@link PipelineStageSwitchingExample}
-             */
+        Mat HSV = new Mat();
+        Mat leftCrop;
+        Mat rightCrop;
+        Mat centerCrop;
+        double leftavgfin;
+        double rightavgfin;
+        double centeravgfin;
+        Mat outPut = new Mat();
+        Scalar rectColor1 = new Scalar(255.0, 0.0, 0.0);
+        Scalar rectColor2 = new Scalar(255.0, 255.0, 0.0);
+        Scalar rectColor3 = new Scalar(255.0, 0.0, 255.0);
 
-            return input;
-        }
+        public Mat processFrame(Mat input){
 
-        @Override
-        public void onViewportTapped()
-        {
-            /*
-             * The viewport (if one was specified in the constructor) can also be dynamically "paused"
-             * and "resumed". The primary use case of this is to reduce CPU, memory, and power load
-             * when you need your vision pipeline running, but do not require a live preview on the
-             * robot controller screen. For instance, this could be useful if you wish to see the live
-             * camera preview as you are initializing your robot, but you no longer require the live
-             * preview after you have finished your initialization process; pausing the viewport does
-             * not stop running your pipeline.
-             *
-             * Here we demonstrate dynamically pausing/resuming the viewport when the user taps it
-             */
+            Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
+            telemetry.addLine("pipline running");
 
-            viewportPaused = !viewportPaused;
+            Rect leftRect = new Rect(1, 140, 269, 79);
+            Rect rightRect = new Rect(370, 140, 269, 79);
+            Rect centerRect = new Rect(270, 140, 99, 79);
 
-            if(viewportPaused)
-            {
-                webcam.pauseViewport();
+            input.copyTo(outPut);
+            Imgproc.rectangle(outPut, leftRect, rectColor1, 2);
+            Imgproc.rectangle(outPut, rightRect, rectColor2, 2);
+            Imgproc.rectangle(outPut, centerRect, rectColor3, 2);
+            Imgproc.cvtColor(outPut, HSV, Imgproc.COLOR_RGB2HSV);
+
+            leftCrop = HSV.submat(leftRect);
+            rightCrop = HSV.submat(rightRect);
+            centerCrop = HSV.submat(centerRect);
+
+            Core.extractChannel(leftCrop, leftCrop, 1);
+            Core.extractChannel(rightCrop, rightCrop, 1);
+
+            Scalar leftavg = Core.mean(leftCrop);
+            Scalar rightavg = Core.mean(rightCrop);
+            Scalar centeravg = Core.mean(centerCrop);
+
+            leftavgfin = leftavg.val[0];
+            rightavgfin = rightavg.val[0];
+            centeravgfin = centeravg.val[0];
+
+            telemetry.addData("Left avg:", leftavgfin);
+            telemetry.addData("Right avg:", rightavgfin);
+            telemetry.addData("Center avg:", centeravgfin);
+
+
+            if (centeravgfin < leftavgfin || centeravgfin < rightavgfin) {
+                if (leftavgfin > rightavgfin) {
+                    telemetry.addLine("Left");
+                } else {
+                    telemetry.addLine("right");
+                }
             }
-            else
-            {
-                webcam.resumeViewport();
+            else{
+                telemetry.addLine("center");
             }
+
+            return(outPut);
         }
     }
 }

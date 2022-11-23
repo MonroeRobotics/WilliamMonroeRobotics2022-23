@@ -171,7 +171,7 @@ public class TensorFlowWebcamCustom extends LinearOpMode {
     }
 
     /**
-     * Initialize the TensorFlow Object Detection engine.
+     * Initialize the TensorFlow Object Detesction engine.
      */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
