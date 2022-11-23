@@ -67,17 +67,17 @@ public class AutoTest extends OpMode {
             Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
             telemetry.addLine("pipeline running");
 
-            Rect leftRect = new Rect(1, 140, 269, 79);
-            Rect rightRect = new Rect(370, 140, 269, 79);
+            Rect leftRect = new Rect(250, 140, 19, 79);
+            Rect rightRect = new Rect(370, 140, 19, 79);
             Rect centerRect = new Rect(270, 140, 99, 79);
 
 
 
-            Scalar lowHSV = new Scalar(0.0,0.0,0.0);
-            Scalar highHSV = new Scalar(255.0,255.0,255.0);
+            Scalar lowHSV = new Scalar(17,50,50);
+            Scalar highHSV = new Scalar(22,255,255);
             Mat thresh = new Mat();
 
-            Core.inRange(input, new Scalar(255.0,255.0,255.0), new Scalar(0.0,0.0,0.0), thresh);
+            Core.inRange(HSV, lowHSV, highHSV, thresh);
 
             leftCrop = HSV.submat(leftRect);
             rightCrop = HSV.submat(rightRect);
