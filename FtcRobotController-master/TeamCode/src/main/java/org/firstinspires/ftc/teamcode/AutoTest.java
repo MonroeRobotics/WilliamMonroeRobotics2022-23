@@ -69,7 +69,7 @@ public class AutoTest extends OpMode {
         //Loops and processes every frame and returns desired changed
         public Mat processFrame(Mat input) {
 
-            //changes Mat "input" from RGB to HSV and saves under MAT HSV
+            //changes Mat input from RGB to HSV and saves to Mat HSV
             Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
             telemetry.addLine("pipeline running");
 
@@ -86,7 +86,7 @@ public class AutoTest extends OpMode {
             Mat thresh = new Mat();
             Core.inRange(HSV, lowHSV, highHSV, thresh);
 
-            //creates submats(subsections) of MAT HSV using the rectangle regions
+            //creates submats(subsections) of Mat HSV using the rectangle regions
             leftCrop = HSV.submat(leftRect);
             rightCrop = HSV.submat(rightRect);
             centerCrop = HSV.submat(centerRect);
