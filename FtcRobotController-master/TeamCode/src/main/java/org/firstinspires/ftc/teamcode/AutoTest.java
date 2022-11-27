@@ -26,7 +26,7 @@ public class AutoTest extends OpMode {
     DcMotorEx frontRight;
     DcMotorEx frontLeft;
 
-    double motorSpeed = 200;
+    double motorSpeed = 1000;
 
     double leftavgfin;
     double rightavgfin;
@@ -85,6 +85,7 @@ public class AutoTest extends OpMode {
     @Override
     public void loop(){
         if (centeravgfin < 240){
+            motorSpeed = (-3)*centeravgfin + 1000;
             direction = -1.57;
             magnitude = 1;
             if(leftavgfin > 0){
@@ -94,10 +95,30 @@ public class AutoTest extends OpMode {
                 turn = .2;
             }
         }
-        else{
-            magnitude = 0;
-            direction = 0;
-            turn = 0;
+        else {
+            if(rightavgfin > 0 && leftavgfin > 0){
+                motorSpeed = 200;
+                direction = -1.57;
+                magnitude = -1;
+            }
+            else if(rightavgfin > 240){
+                motorSpeed = 500;
+                direction = 0;
+                magnitude = 0;
+                turn = .2;
+            }
+            else if(leftavgfin > 240){
+                motorSpeed = 500;
+                direction = 0;
+                magnitude = 0;
+                turn = -.2;
+            }
+            else{
+                magnitude = 0;
+                direction = 0;
+                turn = 0;
+            }
+
         }
 
         fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
