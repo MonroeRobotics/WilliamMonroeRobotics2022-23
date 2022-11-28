@@ -160,14 +160,10 @@ public class DetectionAutoTest extends LinearOpMode {
                         }
 
                         telemetry.update();
+                        break;
                     }
                 }
-                if (dectionList.contains("1 Bolt")){
-                    motor1.setPower(1.0);
-                }
-                else{
-                    motor1.setPower(0);
-                }
+                
 
             }
         }

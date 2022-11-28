@@ -38,7 +38,11 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
+import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
+import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -73,14 +77,15 @@ public class AutoProgram extends LinearOpMode{
 
     double motorSpeed = 1000;
 
+    int leftLowBound = 240;
+    int leftTarget = 260;
+    int rightTarget = 390;
+    int rightHighBound = 410;
+
     boolean isHoming = true;
     double xBounding = 0;
     double yBounding = 0;
-
-    double leftavgfin;
-    double rightavgfin;
-    double centeravgfin;
-
+    
     double direction;
     double magnitude;
     double fRight;
@@ -89,32 +94,155 @@ public class AutoProgram extends LinearOpMode{
     double fLeft;
     double turn;
 
+    private static final String TFOD_MODEL_FILE  = "/sdcard/FIRST/tflitemodels/model_20221111_164012.tflite";
+
+    private static final String[] LABELS = {
+            "Barn",
+            "Dragon",
+            "WM"
+    };
+
+    private static final String VUFORIA_KEY =
+            "AYgFQEn/////AAABmZktkoBTAkVNt+reKSY8LhArtiNgmXoPcLLAfyChoAu8zFN33UltlJ5qSzMikTirl0dLSkgn8Jix4iFSMbc3ArlSBwmNgP5nMSuEGCLvdjgLddPa7eBL7M8CrYcWGwG9E/snaBn5br/bkKQFsfdb334YxxMPn6EDfJplvsX+87KHhIKqKMsAKry4+PegiTwSyzOZapdb+qUmngVHVof2xObB2YI3TOikP2/T7qqToI+RpxVxV1ndg7yUCwTwAM2TjZUgj5N7uNV6dkAtt8+sYjhdXA5ZmsXzUm1a8BatDt8SkI6tXUEDohxLWGlwqdy4hyESnCX/fsglF43c2637MoRsqjjfeI7Nb3OGRMtOiI6A";
+
+    private VuforiaLocalizer vuforia;
+
+    private TFObjectDetector tfod;
+
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "webcam");
+
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+    }
+
+
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfodParameters.minResultConfidence = 0.75f;
+        tfodParameters.isModelTensorFlow2 = true;
+        tfodParameters.inputSize = 300;
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+
+        // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
+        // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
+//        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
+        tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
+    }
+
+    public String detectSymbol(){
+        String stringDetection = "";
+
+
+
+        List<String> detectionList = new ArrayList();
+        if (opModeIsActive()) {
+            while (opModeIsActive()) {
+
+                if (tfod != null) {
+                    // getUpdatedRecognitions() will return null if no new information is available since
+                    // the last time that call was made.
+                    List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+
+                    if (updatedRecognitions != null) {
+                        telemetry.addData("# Objects Detected", updatedRecognitions.size());
+
+                        detectionList = new ArrayList();
+
+                        // step through the list of recognitions and display image position/size information for each one
+                        // Note: "Image number" refers to the randomized image orientation/number
+                        for (Recognition recognition : updatedRecognitions) {
+                            detectionList.add(recognition.getLabel());
+                            double col = (recognition.getLeft() + recognition.getRight()) / 2 ;
+                            double row = (recognition.getTop()  + recognition.getBottom()) / 2 ;
+                            double width  = Math.abs(recognition.getRight() - recognition.getLeft()) ;
+                            double height = Math.abs(recognition.getTop()  - recognition.getBottom()) ;
+                        }
+                        if (detectionList.size() > 0){
+                            if (detectionList.contains("Dragon")){
+                                stringDetection = "Dragon";
+                            }
+                            else if (detectionList.contains("Barn")){
+                                stringDetection = "Barn";
+                            }
+                            else if (detectionList.contains("WM")){
+                                stringDetection = "WM";
+                            }
+                            else {
+                                stringDetection = "Nothing";
+                            }
+                            tfod.deactivate();
+                            break;
+                        }
+
+                        telemetry.update();
+
+                    }
+
+                }
+            }
+        }
+        return stringDetection;
+    }
+
     public void homePipe() {
+
+        WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
+        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
+
+        //sets webcam Computer Vision Pipeline to examplePipeline
+        webcam.setPipeline(new AutoProgram.pipeDetect());
+
+        //Starts streaming camera
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+            @Override
+            public void onOpened() {
+                webcam.startStreaming(640,360, OpenCvCameraRotation.UPRIGHT);
+            }
+
+            @Override
+            public void onError(int errorCode) {
+
+            }
+        });
+
         while (opModeIsActive()) {
             motorSpeed = 500;
 
-            if (xBounding > 250 && xBounding < 270 && yBounding > 380 && yBounding < 400){
+
+
+            if (xBounding > leftLowBound && xBounding < leftTarget && yBounding > rightTarget && yBounding < rightHighBound){
                 isHoming = false;
                 magnitude = 0;
                 direction = 0;
                 turn = 0;
+                webcam.stopStreaming();
                 break;
 
             }
             if (isHoming) {
-                if (xBounding > 250 && yBounding < 400) {
+                if (xBounding > leftLowBound && yBounding < rightHighBound) {
                     direction = -1.57;
                     magnitude = 1;
                     turn = 0;
 
                 }
-                else if (xBounding > 270 && yBounding > 380) {
+                else if (xBounding > leftTarget && yBounding > rightTarget) {
                     turn = .2;
                 }
-                else if (xBounding < 270 && yBounding < 380) {
+                else if (xBounding < leftTarget && yBounding < rightTarget) {
                     turn = -.2;
                 }
-                else if (xBounding < 250 && yBounding > 400) {
+                else if (xBounding < leftLowBound && yBounding > rightHighBound) {
                     direction = -1.57;
                     magnitude = -1;
                     turn = 0;
@@ -336,25 +464,24 @@ public class AutoProgram extends LinearOpMode{
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
-        int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
+        initVuforia();
+        initTfod();
 
-        //sets webcam Computer Vision Pipeline to examplePipeline
-        webcam.setPipeline(new AutoProgram.pipeDetect());
+        /**
+         * Activate TensorFlow Object Detection before we wait for the start command.
+         * Do it here so that the Camera Stream window will have the TensorFlow annotations visible.
+         **/
+        if (tfod != null) {
+            tfod.activate();
 
-        //Starts streaming camera
-        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
-            @Override
-            public void onOpened() {
-                webcam.startStreaming(640,360, OpenCvCameraRotation.UPRIGHT);
-            }
-
-            @Override
-            public void onError(int errorCode) {
-
-            }
-        });
+            // The TensorFlow software will scale the input images from the camera to a lower resolution.
+            // This can result in lower detection accuracy at longer distances (> 55cm or 22").
+            // If your target is at distance greater than 50 cm (20") you can increase the magnification value
+            // to artificially zoom in to the center of image.  For best results, the "aspectRatio" argument
+            // should be set to the value of the images used to create the TensorFlow Object Detection model
+            // (typically 16/9).
+            tfod.setZoom(2.0, 9.0/16.0);
+        }
 
         waitForStart();
 
@@ -362,7 +489,9 @@ public class AutoProgram extends LinearOpMode{
 
         moveForTime(1200, 270, .5,0);
 
-        sleep(3000);
+        String symbol = detectSymbol();
+        telemetry.addData("symbol", symbol);
+        telemetry.update();
 
        moveForTime(1000, 270, .5, -.38);
        rightSlide.setTargetPosition(-1050);
@@ -374,11 +503,20 @@ public class AutoProgram extends LinearOpMode{
 
 
 
-        homePipe();
+        homePipe(); // Calls method - Locate and position to pipe
+        sleep(500); // Wait for robot to stop before dropping to counteract inertia
 
-        clawServo.setPosition(.45);
+        clawServo.setPosition(.45); // Opens claw, drops cone
+        sleep(500); // Waits for cone to drop
+        clawServo.setPosition(.28); // Closes claw
+        sleep(250); // Waits for close
+        leftArmServo.setPosition(0); // Sets let ftArm back to init position
+        rightArmServo.setPosition(1); // Sets rightArm back to init position
 
-        sleep(30000);
+        rightSlide.setTargetPosition(-10);
+        leftSlide.setTargetPosition(-10);
+
+        sleep(30000); // Temporary - Stop Mo
     }
 
     class pipeDetect extends OpenCvPipeline {
@@ -396,10 +534,10 @@ public class AutoProgram extends LinearOpMode{
             Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
 
             //Creates New rectangle objects for 3 regions, Left, Right, and Center
-            Rect leftRect = new Rect(270, 140, 1, 79);
-            Rect rightRect = new Rect(380, 140, 1, 79);
-            Rect leftBound = new Rect(250, 140, 1, 79);
-            Rect rightBound = new Rect(400, 140, 1, 79);
+            Rect leftRect = new Rect(leftTarget, 140, 1, 79);
+            Rect rightRect = new Rect(rightTarget, 140, 1, 79);
+            Rect leftBound = new Rect(leftLowBound, 140, 1, 79);
+            Rect rightBound = new Rect(rightHighBound, 140, 1, 79);
 
             //Creates the upper and lower range for the accepted HSV values for color of pole
             Scalar lowHSV = new Scalar(16,50,50);
@@ -463,4 +601,6 @@ public class AutoProgram extends LinearOpMode{
             return outPut;
         }
     }
+
+
 }
