@@ -29,6 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
+import static org.opencv.imgproc.Imgproc.MORPH_RECT;
+
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -38,14 +41,20 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
+import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvPipeline;
 import org.openftc.easyopencv.OpenCvWebcam;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Autonomous(name = "Auto Program", group = "Main")
 
@@ -64,6 +73,10 @@ public class AutoProgram extends LinearOpMode{
 
     double motorSpeed = 1000;
 
+    boolean isHoming = true;
+    double xBounding = 0;
+    double yBounding = 0;
+
     double leftavgfin;
     double rightavgfin;
     double centeravgfin;
@@ -78,44 +91,35 @@ public class AutoProgram extends LinearOpMode{
 
     public void homePipe() {
         while (opModeIsActive()) {
-            if (centeravgfin < 240){
-                motorSpeed = (-1)*centeravgfin + 500;
-                direction = -1.57;
-                magnitude = 1;
-                if(leftavgfin > 20){
-                    turn = -.3;
-                }
-                if(rightavgfin > 20){
-                    turn = .3;
-                }
+            motorSpeed = 500;
+
+            if (xBounding > 250 && xBounding < 270 && yBounding > 380 && yBounding < 400){
+                isHoming = false;
+                magnitude = 0;
+                direction = 0;
+                turn = 0;
+                break;
+
             }
-            else {
-                if(rightavgfin > 0 && leftavgfin > 0){
-                    motorSpeed = 200;
+            if (isHoming) {
+                if (xBounding > 250 && yBounding < 400) {
+                    direction = -1.57;
+                    magnitude = 1;
+                    turn = 0;
+
+                }
+                else if (xBounding > 270 && yBounding > 380) {
+                    turn = .2;
+                }
+                else if (xBounding < 270 && yBounding < 380) {
+                    turn = -.2;
+                }
+                else if (xBounding < 250 && yBounding > 400) {
                     direction = -1.57;
                     magnitude = -1;
-                }
-                else if(rightavgfin > 240){
-                    motorSpeed = 500;
-                    direction = 0;
-                    magnitude = 0;
-                    turn = .1;
-                }
-                else if(leftavgfin > 240){
-                    motorSpeed = 500;
-                    direction = 0;
-                    magnitude = 0;
-                    turn = -.1;
-                }
-                else{
-                    magnitude = 0;
-                    direction = 0;
                     turn = 0;
-                    break;
                 }
-
             }
-
 
             fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
             bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
@@ -123,24 +127,28 @@ public class AutoProgram extends LinearOpMode{
             fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
 
             //region Setting Motors
-            if (bLeft > 0) {
+            if (bLeft > 0){
                 backLeft.setDirection(DcMotor.Direction.FORWARD);
-            } else {
+            }
+            else {
                 backLeft.setDirection(DcMotor.Direction.REVERSE);
             }
-            if (bRight > 0) {
+            if (bRight > 0){
                 backRight.setDirection(DcMotor.Direction.FORWARD);
-            } else {
+            }
+            else {
                 backRight.setDirection(DcMotor.Direction.REVERSE);
             }
-            if (fRight > 0) {
+            if (fRight > 0){
                 frontRight.setDirection(DcMotor.Direction.FORWARD);
-            } else {
+            }
+            else {
                 frontRight.setDirection(DcMotor.Direction.REVERSE);
             }
-            if (fLeft > 0) {
+            if (fLeft > 0){
                 frontLeft.setDirection(DcMotor.Direction.REVERSE);
-            } else {
+            }
+            else {
                 frontLeft.setDirection(DcMotor.Direction.FORWARD);
             }
 
@@ -364,8 +372,10 @@ public class AutoProgram extends LinearOpMode{
         moveForTime(1450, 270, .5,0 );
 //        turnForTime(200,.2);
 
-        sleep(5000);
+
+
         homePipe();
+
         clawServo.setPosition(.45);
 
         sleep(30000);
@@ -376,57 +386,78 @@ public class AutoProgram extends LinearOpMode{
         //Initializing Variables
         Mat HSV = new Mat();
         Mat outPut = new Mat();
-        Mat leftCrop;
-        Mat rightCrop;
-        Mat centerCrop;
 
-        Scalar rectColor1 = new Scalar(255.0, 0.0, 0.0);
-        Scalar rectColor2 = new Scalar(255.0, 255.0, 0.0);
-        Scalar rectColor3 = new Scalar(255.0, 0.0, 255.0);
+        Scalar rectColor1 = new Scalar(50, 255, 255);
 
         //Loops and processes every frame and returns desired changed
         public Mat processFrame(Mat input) {
 
             //changes Mat input from RGB to HSV and saves to Mat HSV
             Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
-            telemetry.addLine("pipeline running");
 
             //Creates New rectangle objects for 3 regions, Left, Right, and Center
-            Rect leftRect = new Rect(250, 140, 19, 79);
-            Rect rightRect = new Rect(370, 140, 19, 79);
-            Rect centerRect = new Rect(270, 140, 99, 79);
+            Rect leftRect = new Rect(270, 140, 1, 79);
+            Rect rightRect = new Rect(380, 140, 1, 79);
+            Rect leftBound = new Rect(250, 140, 1, 79);
+            Rect rightBound = new Rect(400, 140, 1, 79);
 
             //Creates the upper and lower range for the accepted HSV values for color of pole
             Scalar lowHSV = new Scalar(16,50,50);
-            Scalar highHSV = new Scalar(23,255,255);
+            Scalar highHSV = new Scalar(24,255,255);
 
             //Returns Output Mat "thresh" that only contains pixels that are within low and high boundaries (lowHSV, highHSV)
             Mat thresh = new Mat();
             Core.inRange(HSV, lowHSV, highHSV, thresh);
 
-            //creates submats(subsections) of Mat HSV using the rectangle regions
-            leftCrop = thresh.submat(leftRect);
-            rightCrop = thresh.submat(rightRect);
-            centerCrop = thresh.submat(centerRect);
+            Mat dilate = new Mat();
+            Imgproc.morphologyEx(thresh, dilate, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(7, 7)));
 
-            Scalar leftavg = Core.mean(leftCrop);
-            Scalar rightavg = Core.mean(rightCrop);
-            Scalar centeravg = Core.mean(centerCrop);
+            List<MatOfPoint> contours = new ArrayList<>();
+            Mat hierarchy = new Mat();
+            Imgproc.findContours(dilate, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
-            leftavgfin = leftavg.val[0];
-            rightavgfin = rightavg.val[0];
-            centeravgfin = centeravg.val[0];
+            dilate.copyTo(outPut);
 
-            telemetry.addData("LeftAvg", leftavgfin);
-            telemetry.addData("RightAvg", rightavgfin);
-            telemetry.addData("CenterAvg", centeravgfin);
+
+            if (contours.size() != 0) {
+                MatOfPoint2f[] contoursPoly  = new MatOfPoint2f[contours.size()];
+                Rect[] boundRect = new Rect[contours.size()];
+
+                for (int i = 0; i < contours.size(); i++) {
+                    contoursPoly[i] = new MatOfPoint2f();
+                    Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
+                    boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
+                }
+
+                double maxVal = 0;
+                int maxValIdx = 0;
+                for (int contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
+                    double contourArea = Imgproc.contourArea(contours.get(contourIdx));
+                    if (maxVal < contourArea) {
+                        maxVal = contourArea;
+                        maxValIdx = contourIdx;
+                    }
+                }
+                xBounding = boundRect[maxValIdx].x;
+
+                yBounding = boundRect[maxValIdx].x + boundRect[maxValIdx].width;
+
+                telemetry.addData("MaxContor",maxVal);
+                Imgproc.rectangle(outPut, boundRect[maxValIdx], new Scalar(150, 80, 100), 3);
+            }
+
+
+            telemetry.addData("x bounding", xBounding);
+            telemetry.addData("y bounding", yBounding);
 
 
             //copies thresh Mat to outPut and draws rectangles regions on the image for user to see
-            thresh.copyTo(outPut);
+
             Imgproc.rectangle(outPut, leftRect, rectColor1, 2);
-            Imgproc.rectangle(outPut, rightRect, rectColor2, 2);
-            Imgproc.rectangle(outPut, centerRect, rectColor3, 2);
+            Imgproc.rectangle(outPut, rightRect, rectColor1, 2);
+            Imgproc.rectangle(outPut, leftBound, rectColor1, 2);
+            Imgproc.rectangle(outPut, rightBound, rectColor1, 2);
+
 
             //Returns to display outPut Mat
             return outPut;
