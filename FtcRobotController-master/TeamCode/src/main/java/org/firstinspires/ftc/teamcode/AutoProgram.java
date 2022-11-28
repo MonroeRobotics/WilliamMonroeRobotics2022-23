@@ -77,42 +77,43 @@ public class AutoProgram extends LinearOpMode{
     double turn;
 
     public void homePipe() {
-        while (true) {
-            if (centeravgfin < 240) {
-                motorSpeed = (-3) * centeravgfin + 1000;
+        while (opModeIsActive()) {
+            if (centeravgfin < 240){
+                motorSpeed = (-1)*centeravgfin + 500;
                 direction = -1.57;
                 magnitude = 1;
-                if (leftavgfin > 0) {
-                    turn = -.2;
+                if(leftavgfin > 20){
+                    turn = -.3;
                 }
-                if (rightavgfin > 0) {
-                    turn = .2;
+                if(rightavgfin > 20){
+                    turn = .3;
                 }
             }
             else {
-                if (rightavgfin > 0 && leftavgfin > 0) {
+                if(rightavgfin > 0 && leftavgfin > 0){
                     motorSpeed = 200;
                     direction = -1.57;
                     magnitude = -1;
                 }
-                else if (rightavgfin > 240) {
+                else if(rightavgfin > 240){
                     motorSpeed = 500;
                     direction = 0;
                     magnitude = 0;
-                    turn = .2;
+                    turn = .1;
                 }
-                else if (leftavgfin > 240) {
+                else if(leftavgfin > 240){
                     motorSpeed = 500;
                     direction = 0;
                     magnitude = 0;
-                    turn = -.2;
+                    turn = -.1;
                 }
-                else {
+                else{
                     magnitude = 0;
                     direction = 0;
                     turn = 0;
                     break;
                 }
+
             }
 
 
@@ -153,7 +154,14 @@ public class AutoProgram extends LinearOpMode{
 
             telemetry.update();
         }
+
+        backLeft.setPower(0);
+        frontRight.setPower(0);
+        backRight.setPower(0);
+        frontLeft.setPower(0);
     }
+
+    // based on time and power which determines turn direction and turn speed
     public void turnForTime(float time, double turnPower){
 
         double checkTime =  System.currentTimeMillis();
@@ -161,22 +169,17 @@ public class AutoProgram extends LinearOpMode{
         double motorSpeed = 2500;
 
 
-
+        // Encoders to set motors to either actively hold position or move freely based on the usage
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-
-        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
         sleep(10);
@@ -213,8 +216,8 @@ public class AutoProgram extends LinearOpMode{
         frontLeft.setPower(0);
     }
 
-    // Set motors to move forward
-    public void moveForTime(float time, float deg, double magnitude){
+    // Set motors to move, based on time, direction and speed (magnitude)
+    public void moveForTime(float time, float deg, double magnitude, double turn){
 
         double fRight;
         double bRight;
@@ -227,11 +230,12 @@ public class AutoProgram extends LinearOpMode{
         double checkTime =  System.currentTimeMillis();
         double checkTimeEnd = checkTime + time;
 
-
+         // Encoders to set motors to either actively hold position or move freely based on the usage
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
 
         frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -247,10 +251,10 @@ public class AutoProgram extends LinearOpMode{
 
         while (checkTimeEnd > System.currentTimeMillis() && opModeIsActive()) {
 
-            fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude));
-            bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude));
-            bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude));
-            fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude));
+            fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
 
 
             if (bLeft > 0){
@@ -308,6 +312,12 @@ public class AutoProgram extends LinearOpMode{
         leftArmServo.setPosition(.72);
         rightArmServo.setPosition(.3);
 
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         rightSlide.setTargetPosition(-10);
         leftSlide.setTargetPosition(-10);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
@@ -342,18 +352,23 @@ public class AutoProgram extends LinearOpMode{
 
         // run until the end of the match (driver presses STOP)
 
-        moveForTime(1500, 270, .5);
+        moveForTime(1200, 270, .5,0);
 
         sleep(3000);
 
-        rightSlide.setTargetPosition(-1050);
-        leftSlide.setTargetPosition(-1050);
+       moveForTime(1000, 270, .5, -.38);
+       rightSlide.setTargetPosition(-1050);
+       leftSlide.setTargetPosition(-1050);
 
-        // After park, Move forward, turn, and home onto nearest post
-        turnForTime(1000, .5);
-        moveForTime(2500, 270, .5);
+        // After park, Move forward, turn, and scan for nearest post
+        moveForTime(1450, 270, .5,0 );
+//        turnForTime(200,.2);
+
+        sleep(5000);
         homePipe();
+        clawServo.setPosition(.45);
 
+        sleep(30000);
     }
 
     class pipeDetect extends OpenCvPipeline {
@@ -382,8 +397,8 @@ public class AutoProgram extends LinearOpMode{
             Rect centerRect = new Rect(270, 140, 99, 79);
 
             //Creates the upper and lower range for the accepted HSV values for color of pole
-            Scalar lowHSV = new Scalar(15,50,50);
-            Scalar highHSV = new Scalar(24,255,255);
+            Scalar lowHSV = new Scalar(16,50,50);
+            Scalar highHSV = new Scalar(23,255,255);
 
             //Returns Output Mat "thresh" that only contains pixels that are within low and high boundaries (lowHSV, highHSV)
             Mat thresh = new Mat();
