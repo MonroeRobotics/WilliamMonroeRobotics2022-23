@@ -563,19 +563,6 @@ public class AutoProgram2 extends LinearOpMode{
 
             Core.inRange(HSV, lowHSVA, highHSVA, threshA);
 
-
-            //Imgproc.morphologyEx(threshM, dilateM, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(7, 7)));
-
-
-            //Imgproc.morphologyEx(threshG, dilateG, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(7, 7)));
-
-
-            //Imgproc.morphologyEx(threshA, dilateA, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(7, 7)));
-
-            //cropM = dilateM.submat(centerScreen);
-            //cropG = dilateG.submat(centerScreen);
-           // cropA = dilateA.submat(centerScreen);
-
             cropM = threshM.submat(centerScreen);
             cropG = threshG.submat(centerScreen);
             cropA = threshA.submat(centerScreen);
