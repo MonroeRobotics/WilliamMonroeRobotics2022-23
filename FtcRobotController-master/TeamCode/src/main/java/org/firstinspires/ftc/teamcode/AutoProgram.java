@@ -179,7 +179,7 @@ public class AutoProgram extends LinearOpMode{
                             else {
                                 stringDetection = "Nothing";
                             }
-                            tfod.deactivate();
+
                             break;
                         }
 
@@ -190,6 +190,7 @@ public class AutoProgram extends LinearOpMode{
                 }
             }
         }
+        tfod.deactivate();
         return stringDetection;
     }
 
