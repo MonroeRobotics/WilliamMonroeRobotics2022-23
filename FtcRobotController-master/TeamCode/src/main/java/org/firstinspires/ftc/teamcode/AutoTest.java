@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.opencv.core.Core;
@@ -135,8 +136,8 @@ public class AutoTest extends OpMode {
 
         fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
         bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-        bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
-        fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+        bRight = -(motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+        fLeft = -(motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
 
         //region Setting Motors
         if (bLeft > 0){
@@ -158,10 +159,10 @@ public class AutoTest extends OpMode {
             frontRight.setDirection(DcMotor.Direction.REVERSE);
         }
         if (fLeft > 0){
-            frontLeft.setDirection(DcMotor.Direction.REVERSE);
+            frontLeft.setDirection(DcMotor.Direction.FORWARD);
         }
         else {
-            frontLeft.setDirection(DcMotor.Direction.FORWARD);
+            frontLeft.setDirection(DcMotor.Direction.REVERSE);
         }
 
 

@@ -37,6 +37,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -118,10 +119,9 @@ public class AutoProgram2 extends LinearOpMode{
                 magnitude = 0;
                 direction = 0;
                 turn = 0;
-                webcam.stopStreaming();
                 break;
-
             }
+
             if (isHoming) {
                 if (xBounding > leftLowBound && yBounding < rightHighBound) {
                     direction = -1.57;
@@ -144,8 +144,8 @@ public class AutoProgram2 extends LinearOpMode{
 
             fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
             bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            bRight = -(motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            fLeft = -(motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
 
             //region Setting Motors
             if (bLeft > 0){
@@ -167,10 +167,10 @@ public class AutoProgram2 extends LinearOpMode{
                 frontRight.setDirection(DcMotor.Direction.REVERSE);
             }
             if (fLeft > 0){
-                frontLeft.setDirection(DcMotor.Direction.REVERSE);
+                frontLeft.setDirection(DcMotor.Direction.FORWARD);
             }
             else {
-                frontLeft.setDirection(DcMotor.Direction.FORWARD);
+                frontLeft.setDirection(DcMotor.Direction.REVERSE);
             }
 
 
@@ -219,13 +219,13 @@ public class AutoProgram2 extends LinearOpMode{
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         if (turnPower > 0){
-            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
             backLeft.setDirection(DcMotor.Direction.FORWARD);
             frontRight.setDirection(DcMotor.Direction.FORWARD);
             frontLeft.setDirection(DcMotor.Direction.REVERSE);
         }
         else{
-            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.FORWARD);
             backLeft.setDirection(DcMotor.Direction.REVERSE);
             frontRight.setDirection(DcMotor.Direction.REVERSE);
             frontLeft.setDirection(DcMotor.Direction.FORWARD);
@@ -270,13 +270,13 @@ public class AutoProgram2 extends LinearOpMode{
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         if (turnPower > 0){
-            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
             backLeft.setDirection(DcMotor.Direction.FORWARD);
             frontRight.setDirection(DcMotor.Direction.FORWARD);
             frontLeft.setDirection(DcMotor.Direction.REVERSE);
         }
         else{
-            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.FORWARD);
             backLeft.setDirection(DcMotor.Direction.REVERSE);
             frontRight.setDirection(DcMotor.Direction.REVERSE);
             frontLeft.setDirection(DcMotor.Direction.FORWARD);
@@ -301,13 +301,13 @@ public class AutoProgram2 extends LinearOpMode{
         }
 
         if (turnPower < 0){
-            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
             backLeft.setDirection(DcMotor.Direction.FORWARD);
             frontRight.setDirection(DcMotor.Direction.FORWARD);
             frontLeft.setDirection(DcMotor.Direction.REVERSE);
         }
         else{
-            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.FORWARD);
             backLeft.setDirection(DcMotor.Direction.REVERSE);
             frontRight.setDirection(DcMotor.Direction.REVERSE);
             frontLeft.setDirection(DcMotor.Direction.FORWARD);
@@ -321,13 +321,13 @@ public class AutoProgram2 extends LinearOpMode{
         }
 
         if (turnPower > 0){
-            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
             backLeft.setDirection(DcMotor.Direction.FORWARD);
             frontRight.setDirection(DcMotor.Direction.FORWARD);
             frontLeft.setDirection(DcMotor.Direction.REVERSE);
         }
         else{
-            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.FORWARD);
             backLeft.setDirection(DcMotor.Direction.REVERSE);
             frontRight.setDirection(DcMotor.Direction.REVERSE);
             frontLeft.setDirection(DcMotor.Direction.FORWARD);
@@ -385,8 +385,8 @@ public class AutoProgram2 extends LinearOpMode{
 
             fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
             bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            bRight = -(motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            fLeft = -(motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
 
 
             if (bLeft > 0){
@@ -408,10 +408,10 @@ public class AutoProgram2 extends LinearOpMode{
                 frontRight.setDirection(DcMotor.Direction.REVERSE);
             }
             if (fLeft > 0){
-                frontLeft.setDirection(DcMotor.Direction.REVERSE);
+                frontLeft.setDirection(DcMotor.Direction.FORWARD);
             }
             else {
-                frontLeft.setDirection(DcMotor.Direction.FORWARD);
+                frontLeft.setDirection(DcMotor.Direction.REVERSE);
             }
 
             backLeft.setVelocity(Math.abs(bLeft));

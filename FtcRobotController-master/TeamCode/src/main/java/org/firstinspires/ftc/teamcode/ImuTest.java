@@ -45,13 +45,13 @@ public class ImuTest extends LinearOpMode {
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         if (turnPower > 0){
-            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
             backLeft.setDirection(DcMotor.Direction.FORWARD);
             frontRight.setDirection(DcMotor.Direction.FORWARD);
             frontLeft.setDirection(DcMotor.Direction.REVERSE);
         }
         else{
-            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.FORWARD);
             backLeft.setDirection(DcMotor.Direction.REVERSE);
             frontRight.setDirection(DcMotor.Direction.REVERSE);
             frontLeft.setDirection(DcMotor.Direction.FORWARD);
@@ -76,13 +76,13 @@ public class ImuTest extends LinearOpMode {
         }
 
         if (turnPower < 0){
-            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
             backLeft.setDirection(DcMotor.Direction.FORWARD);
             frontRight.setDirection(DcMotor.Direction.FORWARD);
             frontLeft.setDirection(DcMotor.Direction.REVERSE);
         }
         else{
-            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.FORWARD);
             backLeft.setDirection(DcMotor.Direction.REVERSE);
             frontRight.setDirection(DcMotor.Direction.REVERSE);
             frontLeft.setDirection(DcMotor.Direction.FORWARD);
@@ -96,13 +96,13 @@ public class ImuTest extends LinearOpMode {
         }
 
         if (turnPower > 0){
-            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backRight.setDirection(DcMotor.Direction.REVERSE);
             backLeft.setDirection(DcMotor.Direction.FORWARD);
             frontRight.setDirection(DcMotor.Direction.FORWARD);
             frontLeft.setDirection(DcMotor.Direction.REVERSE);
         }
         else{
-            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backRight.setDirection(DcMotor.Direction.FORWARD);
             backLeft.setDirection(DcMotor.Direction.REVERSE);
             frontRight.setDirection(DcMotor.Direction.REVERSE);
             frontLeft.setDirection(DcMotor.Direction.FORWARD);

@@ -170,8 +170,8 @@ public class driveProgram extends LinearOpMode {
 
             fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
             bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            bRight = -(motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            fLeft = -(motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
             //endregion
 
             // Set color values
@@ -262,10 +262,10 @@ public class driveProgram extends LinearOpMode {
                 frontRight.setDirection(DcMotor.Direction.REVERSE);
             }
             if (fLeft > 0){
-                frontLeft.setDirection(DcMotor.Direction.REVERSE);
+                frontLeft.setDirection(DcMotor.Direction.FORWARD);
             }
             else {
-                frontLeft.setDirection(DcMotor.Direction.FORWARD);
+                frontLeft.setDirection(DcMotor.Direction.REVERSE);
             }
 
 
