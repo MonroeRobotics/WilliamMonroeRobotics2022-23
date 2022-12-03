@@ -28,6 +28,7 @@ public class driveProgram extends LinearOpMode {
         double bLeft;
         double fLeft;
         double turn;
+        double regMotorSpeed = motorSpeed;
 
         boolean isClosed = false;
 
@@ -137,16 +138,28 @@ public class driveProgram extends LinearOpMode {
             //region Motor Speed adjustment
             if (this.gamepad1.dpad_up && motorSpeed < 10000) {
                 if (!dPMotor) {
-                    motorSpeed = motorSpeed + 1000;
+                    motorSpeed = motorSpeed + 500;
+                    regMotorSpeed = motorSpeed;
                     dPMotor = true;
                 }
             } else if (this.gamepad1.dpad_down && motorSpeed > 1000) {
                 if (!dPMotor) {
-                    motorSpeed = motorSpeed - 1000;
+                    motorSpeed = motorSpeed - 500;
+                    regMotorSpeed = motorSpeed;
                     dPMotor = true;
                 }
             } else {
                 dPMotor = false;
+            }
+
+            if(gamepad1.right_bumper){
+                motorSpeed = motorSpeed / 2;
+            }
+            else if(gamepad1.left_bumper){
+                motorSpeed = motorSpeed / 4;
+            }
+            else{
+                motorSpeed = regMotorSpeed;
             }
 
             //endregion
@@ -217,16 +230,15 @@ public class driveProgram extends LinearOpMode {
                 clawServo.setPosition(.24);
             }
 
-
             if(gamepad2.y){
                 leftArmServo.setPosition(0);
                 rightArmServo.setPosition(1);
-                clawServo.setPosition(.24);
+                clawServo.setPosition(.20);
             }
             else if(gamepad2.x){
                 leftArmServo.setPosition(.75);
                 rightArmServo.setPosition(.3);
-                clawServo.setPosition(.24);
+                clawServo.setPosition(.20);
             }
             //endregion
 

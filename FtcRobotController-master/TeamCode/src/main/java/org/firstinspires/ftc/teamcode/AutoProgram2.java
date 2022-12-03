@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
 import static org.opencv.imgproc.Imgproc.MORPH_RECT;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -39,6 +40,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -73,12 +75,16 @@ public class AutoProgram2 extends LinearOpMode{
 
     String colorDetectString = "";
 
+    Orientation lastAngles = new Orientation();
+
+    BNO055IMU imu;
+
     double motorSpeed = 1000;
 
-    int leftLowBound = 250;
-    int leftTarget = 270;
-    int rightTarget = 380;
-    int rightHighBound = 400;
+    int leftLowBound = 240;
+    int leftTarget = 260;
+    int rightTarget = 390;
+    int rightHighBound = 410;
 
     boolean isHoming = true;
     double xBounding = 0;
@@ -105,7 +111,7 @@ public class AutoProgram2 extends LinearOpMode{
         webcam.setPipeline(new AutoProgram2.pipeDetect());
 
         while (opModeIsActive()) {
-            motorSpeed = 400;
+            motorSpeed = 200;
 
             if (xBounding > leftLowBound && xBounding < leftTarget && yBounding > rightTarget && yBounding < rightHighBound){
                 isHoming = false;
@@ -239,6 +245,109 @@ public class AutoProgram2 extends LinearOpMode{
         frontLeft.setPower(0);
     }
 
+    public void turnAngle(float angle, double turnPower){
+
+        double motorSpeed = 2500;
+        double startingAngle = imu.getAngularOrientation().firstAngle;
+
+
+        // Encoders to set motors to either actively hold position or move freely based on the usage
+        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        sleep(10);
+
+        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+        if (turnPower > 0){
+            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backLeft.setDirection(DcMotor.Direction.FORWARD);
+            frontRight.setDirection(DcMotor.Direction.FORWARD);
+            frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        }
+        else{
+            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backLeft.setDirection(DcMotor.Direction.REVERSE);
+            frontRight.setDirection(DcMotor.Direction.REVERSE);
+            frontLeft.setDirection(DcMotor.Direction.FORWARD);
+        }
+
+
+        while (Math.abs(startingAngle - imu.getAngularOrientation().firstAngle) <= angle) {
+            if(Math.abs(startingAngle - imu.getAngularOrientation().firstAngle) > angle - 20){
+                backLeft.setVelocity(Math.abs(motorSpeed * turnPower / 2));
+                frontRight.setVelocity(Math.abs(motorSpeed * turnPower / 2));
+                backRight.setVelocity(Math.abs(motorSpeed * turnPower / 2));
+                frontLeft.setVelocity(Math.abs(motorSpeed * turnPower / 2));
+            }
+            else{
+                backLeft.setVelocity(Math.abs(motorSpeed * turnPower));
+                frontRight.setVelocity(Math.abs(motorSpeed * turnPower));
+                backRight.setVelocity(Math.abs(motorSpeed * turnPower));
+                frontLeft.setVelocity(Math.abs(motorSpeed * turnPower));
+            }
+
+
+        }
+
+        if (turnPower < 0){
+            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backLeft.setDirection(DcMotor.Direction.FORWARD);
+            frontRight.setDirection(DcMotor.Direction.FORWARD);
+            frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        }
+        else{
+            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backLeft.setDirection(DcMotor.Direction.REVERSE);
+            frontRight.setDirection(DcMotor.Direction.REVERSE);
+            frontLeft.setDirection(DcMotor.Direction.FORWARD);
+        }
+
+        while (Math.abs(startingAngle - imu.getAngularOrientation().firstAngle) >= angle){
+            backLeft.setVelocity(Math.abs(motorSpeed * turnPower / 4));
+            frontRight.setVelocity(Math.abs(motorSpeed * turnPower / 4));
+            backRight.setVelocity(Math.abs(motorSpeed * turnPower / 4));
+            frontLeft.setVelocity(Math.abs(motorSpeed * turnPower / 4));
+        }
+
+        if (turnPower > 0){
+            backRight.setDirection(DcMotor.Direction.FORWARD);
+            backLeft.setDirection(DcMotor.Direction.FORWARD);
+            frontRight.setDirection(DcMotor.Direction.FORWARD);
+            frontLeft.setDirection(DcMotor.Direction.REVERSE);
+        }
+        else{
+            backRight.setDirection(DcMotor.Direction.REVERSE);
+            backLeft.setDirection(DcMotor.Direction.REVERSE);
+            frontRight.setDirection(DcMotor.Direction.REVERSE);
+            frontLeft.setDirection(DcMotor.Direction.FORWARD);
+        }
+
+
+        while (Math.abs(startingAngle - imu.getAngularOrientation().firstAngle) <= angle) {
+
+            backLeft.setVelocity(Math.abs(motorSpeed * turnPower / 8));
+            frontRight.setVelocity(Math.abs(motorSpeed * turnPower / 8));
+            backRight.setVelocity(Math.abs(motorSpeed * turnPower / 8));
+            frontLeft.setVelocity(Math.abs(motorSpeed * turnPower / 8));
+        }
+
+        backLeft.setPower(0);
+        frontRight.setPower(0);
+        backRight.setPower(0);
+        frontLeft.setPower(0);
+    }
+
     // Set motors to move, based on time, direction and speed (magnitude)
     public void moveForTime(float time, float deg, double magnitude, double turn){
 
@@ -326,11 +435,22 @@ public class AutoProgram2 extends LinearOpMode{
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
 
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode                = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit           = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit           = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled      = false;
+
+        imu.initialize(parameters);
+
         leftArmServo = hardwareMap.get(Servo.class, "leftArmServo");
         rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
         clawServo = hardwareMap.get(Servo.class, "clawServo");
 
-        clawServo.setPosition(0.29);
+        clawServo.setPosition(0.24);
 
         leftArmServo.setPosition(.72);
         rightArmServo.setPosition(.3);
@@ -348,8 +468,7 @@ public class AutoProgram2 extends LinearOpMode{
         rightSlide.setPower(0.4);
         leftSlide.setPower(0.4);
 
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
+        
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -371,36 +490,39 @@ public class AutoProgram2 extends LinearOpMode{
             }
         });
 
+        while (!isStopRequested() && !imu.isGyroCalibrated())
+        {
+            sleep(50);
+            idle();
+        }
+
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
 
         waitForStart();
+        
 
-        // run until the end of the match (driver presses STOP)
-
+        moveForTime(1200, 270, .5,0);
 
         String color = detectColor();
         telemetry.addData("Color", color);
         telemetry.update();
-
-
-        moveForTime(1200, 270, .5,0);
-
-
+        
        moveForTime(1000, 270, .5, -.38);
        rightSlide.setTargetPosition(-1050);
        leftSlide.setTargetPosition(-1050);
 
         // After park, Move forward, turn, and scan for nearest post
-        moveForTime(1450, 270, .5,0 );
-//        turnForTime(200,.2);
+        moveForTime(1600, 270, .5,0 );
 
 
 
         homePipe(); // Calls method - Locate and position to pipe
         sleep(500); // Wait for robot to stop before dropping to counteract inertia
 
-        clawServo.setPosition(.45); // Opens claw, drops cone
+        clawServo.setPosition(.38); // Opens claw, drops cone
         sleep(500); // Waits for cone to drop
-        clawServo.setPosition(.28); // Closes claw
+        clawServo.setPosition(.24); // Closes claw
         sleep(250); // Waits for close
         leftArmServo.setPosition(0.5); // Sets let ftArm back to init position
         rightArmServo.setPosition(0.5); // Sets rightArm back to init position
@@ -408,9 +530,9 @@ public class AutoProgram2 extends LinearOpMode{
         rightSlide.setTargetPosition(-10);
         leftSlide.setTargetPosition(-10);
 
-        moveForTime(660, 90, .5,0);
+        moveForTime(750, 90, .5,0);
 
-        turnForTime(580, .5);
+        turnAngle(75, .5);
 
         if(color == "M"){
             stop();
