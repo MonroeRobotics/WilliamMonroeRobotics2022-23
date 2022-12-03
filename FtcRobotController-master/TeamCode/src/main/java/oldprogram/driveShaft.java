@@ -1,10 +1,12 @@
-package org.firstinspires.ftc.teamcode;
+package oldprogram;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+@Disabled
 @TeleOp(name = "driveShaft", group = "Concept")
 // Wheel Movement
 public class driveShaft extends LinearOpMode {

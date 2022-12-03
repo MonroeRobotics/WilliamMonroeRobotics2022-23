@@ -1,10 +1,15 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ColorSensor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
+
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @TeleOp(name = "Drive Program", group = "Main")
 public class driveProgram extends LinearOpMode {
@@ -24,8 +29,18 @@ public class driveProgram extends LinearOpMode {
         double fLeft;
         double turn;
 
+        boolean isClosed = false;
+
         boolean dPSlide = false;
         int slidePos = 0;
+
+        int red;
+        int green;
+        int blue;
+
+        double distance;
+
+
         //endregion
 
         //region Hardware Map
@@ -39,6 +54,26 @@ public class driveProgram extends LinearOpMode {
         Servo leftArmServo = hardwareMap.get(Servo.class, "leftArmServo");
         Servo rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
         Servo clawServo = hardwareMap.get(Servo.class, "clawServo");
+
+        ColorSensor colorSensor = hardwareMap.get(ColorSensor.class, "color");
+        DistanceSensor distanceSensor = hardwareMap.get(DistanceSensor.class, "distance");
+
+        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
+
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+
+        parameters.mode = BNO055IMU.SensorMode.IMU;
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.loggingEnabled = false;
+
+
+
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+
+        imu.initialize(parameters);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -55,11 +90,10 @@ public class driveProgram extends LinearOpMode {
 
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
         //endregion
 
         //region Slide Init
-        clawServo.setPosition(0.29);
+        clawServo.setPosition(0.38);
 
         leftArmServo.setPosition(0);
         rightArmServo.setPosition(1);
@@ -73,8 +107,18 @@ public class driveProgram extends LinearOpMode {
 
         //endregion
 
+        //Wait for Calibrate Gyro
+        while (!isStopRequested() && !imu.isGyroCalibrated())
+        {
+            sleep(50);
+            idle();
+        }
+
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+
+
 
         waitForStart();
 
@@ -115,23 +159,14 @@ public class driveProgram extends LinearOpMode {
             bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
             bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
             fLeft = (motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
-
-            /*
-            if (fRight > 1 || fRight < -1){
-                fLeft = (fLeft / Math.abs(fRight));
-                fRight = (fRight / Math.abs(fRight));
-                bRight = (bRight / Math.abs(fRight));
-                bLeft = (bLeft / Math.abs(fRight));
-            }
-
-            if (fLeft > 1 || fLeft < -1){
-                fLeft = (fLeft / Math.abs(fLeft));
-                fRight = (fRight / Math.abs(fLeft));
-                bLeft = (bLeft / Math.abs(fLeft));
-                bRight = (bRight / Math.abs(fLeft));
-            }
-            */
             //endregion
+
+            // Set color values
+            red = colorSensor.red();
+            green = colorSensor.green();
+            blue = colorSensor.blue();
+
+            distance = distanceSensor.getDistance(DistanceUnit.MM);
 
             //region Linear Slide Movement
             int rightSlidePos = rightSlide.getCurrentPosition();
@@ -168,21 +203,30 @@ public class driveProgram extends LinearOpMode {
             //endregion
 
             //region Claw Servo Movement
+
+            if ((red > 400 && distance < 40) && !isClosed) {
+                isClosed = true;
+                clawServo.setPosition(.24);
+            }
+
             if (gamepad2.a){
-                clawServo.setPosition(.45);
+                clawServo.setPosition(.38);
+                isClosed = false;
             }
             else if (gamepad2.b){
-                clawServo.setPosition(.29);
+                clawServo.setPosition(.24);
             }
+
+
             if(gamepad2.y){
                 leftArmServo.setPosition(0);
                 rightArmServo.setPosition(1);
-                clawServo.setPosition(.28);
+                clawServo.setPosition(.24);
             }
             else if(gamepad2.x){
-                leftArmServo.setPosition(.72);
+                leftArmServo.setPosition(.75);
                 rightArmServo.setPosition(.3);
-                clawServo.setPosition(.28);
+                clawServo.setPosition(.24);
             }
             //endregion
 
@@ -221,7 +265,7 @@ public class driveProgram extends LinearOpMode {
 
             //region Telemetry Data
             telemetry.addData("motorSpeed", motorSpeed);
-            telemetry.addData("direcetion", direction);
+            telemetry.addData("direction", direction);
             telemetry.addData("mag", magnitude);
             telemetry.addData("Status", "Initialized");
 
@@ -229,7 +273,18 @@ public class driveProgram extends LinearOpMode {
             telemetry.addData("left slide", leftSlidePos);
             telemetry.addData("Slide Position", slidePos);
 
+            telemetry.addData("Red", red);
+            telemetry.addData("Green", green);
+            telemetry.addData("Blue", blue);
+
+            telemetry.addData("Distance", distance);
+
+            telemetry.addData("isClosed", isClosed);
+
             telemetry.update();
+
+
+
             //endregion
         }
     }

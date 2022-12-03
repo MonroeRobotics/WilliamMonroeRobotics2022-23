@@ -27,10 +27,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package oldprogram;
 
+import java.util.ArrayList;
+import java.util.List;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -50,8 +53,8 @@ import java.util.List;
  * IMPORTANT: In order to use this OpMode, you need to obtain your own Vuforia license key as
  * is explained below.
  */
-@TeleOp(name = "Concept: TensorFlow Object Detection Webcam", group = "Concept")
-public class TensorFlowWebcamCustom extends LinearOpMode {
+@TeleOp(name = "Concept: DetectionAutoTest", group = "Concept")
+public class DetectionAutoTest extends LinearOpMode {
 
     /*
      * Specify the source for the Tensor Flow Model.
@@ -60,14 +63,14 @@ public class TensorFlowWebcamCustom extends LinearOpMode {
      * has been downloaded to the Robot Controller's SD FLASH memory, it must to be loaded using loadModelFromFile()
      * Here we assume it's an Asset.    Also see method initTfod() below .
      */
-    private static final String TFOD_MODEL_FILE  = "/sdcard/FIRST/tflitemodels/model_20221111_164012.tflite";
+    private static final String TFOD_MODEL_ASSET = "PowerPlay.tflite";
     // private static final String TFOD_MODEL_FILE  = "/sdcard/FIRST/tflitemodels/CustomTeamModel.tflite";
 
 
     private static final String[] LABELS = {
-            "Barn",
-            "Dragon",
-            "WM"
+            "1 Bolt",
+            "2 Bulb",
+            "3 Panel"
     };
 
     /*
@@ -97,10 +100,14 @@ public class TensorFlowWebcamCustom extends LinearOpMode {
      */
     private TFObjectDetector tfod;
 
+
+    DcMotor motor1;
+
     @Override
     public void runOpMode() {
         // The TFObjectDetector uses the camera frames from the VuforiaLocalizer, so we create that
         // first.
+        motor1 = hardwareMap.get(DcMotor.class, "frontRight");
         initVuforia();
         initTfod();
 
@@ -124,19 +131,24 @@ public class TensorFlowWebcamCustom extends LinearOpMode {
         telemetry.addData(">", "Press Play to start op mode");
         telemetry.update();
         waitForStart();
-
+        List<String> dectionList = new ArrayList();
         if (opModeIsActive()) {
             while (opModeIsActive()) {
+
                 if (tfod != null) {
                     // getUpdatedRecognitions() will return null if no new information is available since
                     // the last time that call was made.
                     List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
+
                     if (updatedRecognitions != null) {
                         telemetry.addData("# Objects Detected", updatedRecognitions.size());
+
+                        dectionList = new ArrayList();
 
                         // step through the list of recognitions and display image position/size information for each one
                         // Note: "Image number" refers to the randomized image orientation/number
                         for (Recognition recognition : updatedRecognitions) {
+                            dectionList.add(recognition.getLabel());
                             double col = (recognition.getLeft() + recognition.getRight()) / 2 ;
                             double row = (recognition.getTop()  + recognition.getBottom()) / 2 ;
                             double width  = Math.abs(recognition.getRight() - recognition.getLeft()) ;
@@ -147,9 +159,13 @@ public class TensorFlowWebcamCustom extends LinearOpMode {
                             telemetry.addData("- Position (Row/Col)","%.0f / %.0f", row, col);
                             telemetry.addData("- Size (Width/Height)","%.0f / %.0f", width, height);
                         }
+
                         telemetry.update();
+                        break;
                     }
                 }
+                
+
             }
         }
     }
@@ -164,14 +180,14 @@ public class TensorFlowWebcamCustom extends LinearOpMode {
         VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
 
         parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraName = hardwareMap.get(WebcamName.class, "webcam");
+        parameters.cameraName = hardwareMap.get(WebcamName.class, "Webcam");
 
         //  Instantiate the Vuforia engine
         vuforia = ClassFactory.getInstance().createVuforia(parameters);
     }
 
     /**
-     * Initialize the TensorFlow Object Detesction engine.
+     * Initialize the TensorFlow Object Detection engine.
      */
     private void initTfod() {
         int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
@@ -184,7 +200,7 @@ public class TensorFlowWebcamCustom extends LinearOpMode {
 
         // Use loadModelFromAsset() if the TF Model is built in as an asset by Android Studio
         // Use loadModelFromFile() if you have downloaded a custom team model to the Robot Controller's FLASH.
-//        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
-         tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABELS);
+        // tfod.loadModelFromFile(TFOD_MODEL_FILE, LABELS);
     }
 }

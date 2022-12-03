@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode;
 
-import static org.opencv.imgproc.Imgproc.MORPH_DILATE;
-import static org.opencv.imgproc.Imgproc.MORPH_ERODE;
+
 import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
 import static org.opencv.imgproc.Imgproc.MORPH_RECT;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -29,6 +29,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
+@Disabled
 @Autonomous(name="Auto Test", group="Concept")
 public class AutoTest extends OpMode {
     OpenCvWebcam webcam = null;
@@ -55,6 +56,7 @@ public class AutoTest extends OpMode {
     double bLeft;
     double fLeft;
     double turn;
+    
 
     @Override
     public void init(){

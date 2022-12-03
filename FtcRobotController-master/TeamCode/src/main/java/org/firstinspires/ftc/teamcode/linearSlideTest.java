@@ -17,7 +17,7 @@ public class linearSlideTest extends OpMode {
     Servo leftArmServo;
     Servo rightArmServo;
     Servo clawServo;
-    systemTimer systemTimer;
+
     int stage = 0;
 
     @Override

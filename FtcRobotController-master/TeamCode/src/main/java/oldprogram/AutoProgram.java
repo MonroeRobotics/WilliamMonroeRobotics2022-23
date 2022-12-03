@@ -27,12 +27,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package oldprogram;
 
 import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
 import static org.opencv.imgproc.Imgproc.MORPH_RECT;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -60,6 +61,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
+@Disabled
 @Autonomous(name = "Auto Program", group = "Main")
 
 public class AutoProgram extends LinearOpMode{
@@ -506,9 +508,9 @@ public class AutoProgram extends LinearOpMode{
         homePipe(); // Calls method - Locate and position to pipe
         sleep(500); // Wait for robot to stop before dropping to counteract inertia
 
-        clawServo.setPosition(.45); // Opens claw, drops cone
+        clawServo.setPosition(.4); // Opens claw, drops cone
         sleep(500); // Waits for cone to drop
-        clawServo.setPosition(.28); // Closes claw
+        clawServo.setPosition(.23); // Closes claw
         sleep(250); // Waits for close
         leftArmServo.setPosition(0); // Sets let ftArm back to init position
         rightArmServo.setPosition(1); // Sets rightArm back to init position
