@@ -33,6 +33,7 @@ public class driveProgram extends LinearOpMode {
         boolean isClosed = false;
 
         boolean dPSlide = false;
+        boolean bumper = false;
         int slidePos = 0;
 
         int red;
@@ -152,14 +153,17 @@ public class driveProgram extends LinearOpMode {
                 dPMotor = false;
             }
 
-            if(gamepad1.right_bumper){
+            if(gamepad1.right_bumper && !bumper){
                 motorSpeed = motorSpeed / 2;
+                bumper = true;
             }
-            else if(gamepad1.left_bumper){
+            else if(gamepad1.left_bumper && !bumper){
                 motorSpeed = motorSpeed / 4;
+                bumper = true;
             }
-            else{
+            else if(!gamepad1.left_bumper && !gamepad1.right_bumper){
                 motorSpeed = regMotorSpeed;
+                bumper = false;
             }
 
             //endregion
