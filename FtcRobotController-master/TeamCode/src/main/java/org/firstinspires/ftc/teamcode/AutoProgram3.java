@@ -61,7 +61,7 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name = "Auto Program Runner", group = "Main")
+@Autonomous(name = "Auto Program 3", group = "Main")
 
 public class AutoProgram3 extends LinearOpMode{
 
@@ -146,10 +146,6 @@ public class AutoProgram3 extends LinearOpMode{
     @Override
     public void runOpMode() {
 
-        drive = new SampleMecanumDrive(hardwareMap);
-
-        drive.setPoseEstimate(new Pose2d(41, -63.96875, Math.toRadians(270.0)));
-
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
 
@@ -175,28 +171,6 @@ public class AutoProgram3 extends LinearOpMode{
         rightSlide.setPower(0.4);
         leftSlide.setPower(0.4);
 
-        Trajectory traj = drive.trajectoryBuilder(new Pose2d(41, -63.96875, Math.toRadians(270.0)))
-                .lineToConstantHeading(new Vector2d(37, -59))
-                .build();
-
-        Trajectory traj2 = drive.trajectoryBuilder(traj.end())
-                .lineToConstantHeading(new Vector2d(33, -37))
-                .build();
-
-        Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
-                .lineToConstantHeading(new Vector2d(33, -31))
-                .build();
-
-        Trajectory traj4 = drive.trajectoryBuilder(traj3.end())
-                .lineToConstantHeading(new Vector2d(33, -37))
-                .build();
-
-        Trajectory traj5 = drive.trajectoryBuilder(traj4.end())
-                .lineToLinearHeading(new Pose2d(10, -35, Math.toRadians(315)))
-                .build();
-
-        
-
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
@@ -217,10 +191,36 @@ public class AutoProgram3 extends LinearOpMode{
             }
         });
 
+        sleep(500);
+
+        drive = new SampleMecanumDrive(hardwareMap);
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
         waitForStart();
+
+        drive.setPoseEstimate(new Pose2d(41, -63.96875, Math.toRadians(270.0)));
+
+        Trajectory traj = drive.trajectoryBuilder(new Pose2d(41, -63.96875, Math.toRadians(270.0)))
+                .lineToConstantHeading(new Vector2d(37, -59))
+                .build();
+
+        Trajectory traj2 = drive.trajectoryBuilder(traj.end())
+                .lineToConstantHeading(new Vector2d(33, -37))
+                .build();
+
+        Trajectory traj3 = drive.trajectoryBuilder(traj2.end())
+                .lineToConstantHeading(new Vector2d(33, -31))
+                .build();
+
+        Trajectory traj4 = drive.trajectoryBuilder(traj3.end())
+                .lineToConstantHeading(new Vector2d(33, -37))
+                .build();
+
+        Trajectory traj5 = drive.trajectoryBuilder(traj4.end())
+                .lineToLinearHeading(new Pose2d(10, -35, Math.toRadians(315)))
+                .build();
 
         drive.followTrajectory(traj);
         drive.followTrajectory(traj2);
