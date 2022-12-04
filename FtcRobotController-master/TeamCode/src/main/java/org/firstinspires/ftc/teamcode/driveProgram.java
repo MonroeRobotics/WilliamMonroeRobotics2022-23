@@ -284,6 +284,7 @@ public class driveProgram extends LinearOpMode {
             telemetry.addData("direction", direction);
             telemetry.addData("mag", magnitude);
             telemetry.addData("Status", "Initialized");
+            telemetry.addData("motor Ticks", frontLeft.getCurrentPosition());
 
             telemetry.addData("right slide", rightSlidePos);
             telemetry.addData("left slide", leftSlidePos);
