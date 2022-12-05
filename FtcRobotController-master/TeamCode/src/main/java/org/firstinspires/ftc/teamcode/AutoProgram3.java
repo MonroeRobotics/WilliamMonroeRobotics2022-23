@@ -94,6 +94,7 @@ public class AutoProgram3 extends OpMode {
     int rightHighBound = 410;
 
     boolean isHoming = false;
+    boolean homed = false;
     double xBounding = 0;
     double yBounding = 0;
 
@@ -121,6 +122,7 @@ public class AutoProgram3 extends OpMode {
             if (xBounding > leftLowBound && xBounding < leftTarget && yBounding > rightTarget && yBounding < rightHighBound){
                 isHoming = false;
                 drive.setDrivePower(new Pose2d(0, 0, 0));
+                clawServo.setPosition(0.38);
             }
 
             if (isHoming) {
@@ -151,33 +153,31 @@ public class AutoProgram3 extends OpMode {
     @Override
     public void init() {
 
-      /*  leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
-        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");*/
+        leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
+        rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
 
         leftArmServo = hardwareMap.get(Servo.class, "leftArmServo");
         rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
         clawServo = hardwareMap.get(Servo.class, "clawServo");
 
-//        clawServo.setPosition(0.24);
+        clawServo.setPosition(0.24);
 
-//        leftArmServo.setPosition(.72);
-//        rightArmServo.setPosition(.3);
+        leftArmServo.setPosition(.72);
+        rightArmServo.setPosition(.3);
 
-        leftArmServo.setPosition(.5);
-        rightArmServo.setPosition(.5);
 
-       /* leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
 
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);*/
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-//        rightSlide.setTargetPosition(-10);
-//        leftSlide.setTargetPosition(-10);
-       /* rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        rightSlide.setTargetPosition(-10);
+        leftSlide.setTargetPosition(-10);
+        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.4);
-        leftSlide.setPower(0.4);*/
+        leftSlide.setPower(0.4);
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
         int cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
@@ -211,16 +211,21 @@ public class AutoProgram3 extends OpMode {
 
         traj2 = drive.trajectoryBuilder(traj.end())
                 .lineToConstantHeading(new Vector2d(33, -37))
-//                .addDisplacementMarker(() -> {
-//                    colorDetectString = detectColor();
-//                    telemetry.addData("color", colorDetectString);
-//                    telemetry.update();
-//                })
+                .addDisplacementMarker(() -> {
+                    colorDetectString = detectColor();
+                    telemetry.addData("color", colorDetectString);
+                    telemetry.update();
+                })
                 .build();
 
         traj3 = drive.trajectoryBuilder(traj2.end())
                 .lineToConstantHeading(new Vector2d(33, -31))
+                .addDisplacementMarker(() -> {
+                    rightSlide.setTargetPosition(-1050);
+                    leftSlide.setTargetPosition(-1050);
+                })
                 .build();
+
         traj4 = drive.trajectoryBuilder(traj3.end())
                 .lineToConstantHeading(new Vector2d(33, -37))
                 .build();
@@ -247,8 +252,7 @@ public class AutoProgram3 extends OpMode {
             drive.update();
         }
         colorDetectString = detectColor();
-//       rightSlide.setTargetPosition(-1050);
-//       leftSlide.setTargetPosition(-1050);
+
         switch (currentState) {
             case TRAJECTORY_1:
                 // Check if the drive class isn't busy
@@ -300,6 +304,10 @@ public class AutoProgram3 extends OpMode {
         }
         if(isHoming) {
             homePipe(); // Calls method - Locate and position to pipe
+        }
+
+        if(homed){
+            clawServo.setPosition(.3);
         }
 //        rightSlide.setTargetPosition(-10);
 //        leftSlide.setTargetPosition(-10);
