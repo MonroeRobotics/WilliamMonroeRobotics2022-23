@@ -19,6 +19,11 @@ public class MeepMeepTesting {
                                 .lineToConstantHeading(new Vector2d(37, -59))
                                 .lineToConstantHeading(new Vector2d(33, -37))
                                 .lineToLinearHeading(new Pose2d(10, -35, Math.toRadians(315)))
+                                .lineToConstantHeading(new Vector2d(7, -30))
+                                .lineToLinearHeading(new Pose2d(10, -35, Math.toRadians(270)))
+                                .lineToConstantHeading(new Vector2d(36, -35))
+                                .waitSeconds(1)
+                                .lineToConstantHeading(new Vector2d(60, -35))
                                 .build()
                 );
 
