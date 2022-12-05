@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode;
 
 import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
 import static org.opencv.imgproc.Imgproc.MORPH_RECT;
+import static org.opencv.imgproc.Imgproc.createCLAHE;
 
 import static java.lang.Thread.sleep;
 
@@ -76,6 +77,13 @@ public class AutoProgram3 extends OpMode {
     Trajectory traj4;
     Trajectory traj5;
 
+    Trajectory centerTraj;
+
+    Trajectory park2;
+    Trajectory park3;
+
+    Pose2d pipePose;
+
     OpenCvWebcam webcam = null;
 
     DcMotorEx leftSlide;
@@ -87,6 +95,7 @@ public class AutoProgram3 extends OpMode {
 
 
     String colorDetectString = "";
+    String colorDetected = "";
 
     int leftLowBound = 240;
     int leftTarget = 260;
@@ -98,8 +107,6 @@ public class AutoProgram3 extends OpMode {
     double xBounding = 0;
     double yBounding = 0;
 
-    int stage = 0;
-
 
     enum State {
         TRAJECTORY_1,   // First, follow a splineTo() trajectory
@@ -107,6 +114,8 @@ public class AutoProgram3 extends OpMode {
         TRAJECTORY_3,
         TRAJECTORY_4,
         TRAJECTORY_5,   // Then, we follow another lineTo() trajectory
+        CENTERTRAJECTORY,
+        PARK,
         IDLE            // Our bot will enter the IDLE state when done
     }
 
@@ -121,28 +130,27 @@ public class AutoProgram3 extends OpMode {
     public void homePipe() {
             if (xBounding > leftLowBound && xBounding < leftTarget && yBounding > rightTarget && yBounding < rightHighBound){
                 isHoming = false;
+                pipePose = drive.getPoseEstimate();
                 drive.setDrivePower(new Pose2d(0, 0, 0));
                 clawServo.setPosition(0.38);
+                currentState = State.CENTERTRAJECTORY;
+                homed = true;
             }
 
             if (isHoming) {
                 if (xBounding > leftLowBound && yBounding < rightHighBound) {
                     drive.setDrivePower(new Pose2d(-.1, 0, 0));
-                    telemetry.addData("Line","0");
                 }
                 else if (xBounding > leftTarget && yBounding > rightTarget) {
 //                    drive.turnAsync(drive.getExternalHeading() - 0.02);
-                    drive.setDrivePower(new Pose2d(0, .1, 0));
-                    telemetry.addData("Line","1");
+                    drive.setDrivePower(new Pose2d(0, .05, 0));
                 }
                 else if (xBounding < leftTarget && yBounding < rightTarget) {
 //                    drive.turnAsync(drive.getExternalHeading() + 0.02);
-                    drive.setDrivePower(new Pose2d(0, -.1, 0));
-                    telemetry.addData("Line","2");
+                    drive.setDrivePower(new Pose2d(0, -.05, 0));
                 }
                 else if (xBounding < leftLowBound && yBounding > rightHighBound) {
                    drive.setDrivePower(new Pose2d(0.1, 0, 0));
-                    telemetry.addData("Line","3");
                 }
             }
             //endregion
@@ -164,7 +172,6 @@ public class AutoProgram3 extends OpMode {
 
         leftArmServo.setPosition(.72);
         rightArmServo.setPosition(.3);
-
 
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
@@ -199,23 +206,21 @@ public class AutoProgram3 extends OpMode {
             }
         });
 
-//        sleep(500);
-
         drive = new SampleMecanumDrive(hardwareMap);
 
         drive.setPoseEstimate(new Pose2d(41, -63.96875, Math.toRadians(270.0)));
 
         traj = drive.trajectoryBuilder(new Pose2d(41, -63.96875, Math.toRadians(270.0)))
                 .lineToConstantHeading(new Vector2d(37, -59))
+                .addDisplacementMarker(() -> {
+                    colorDetected = detectColor();
+                    telemetry.addData("color", colorDetectString);
+                    telemetry.update();
+                })
                 .build();
 
         traj2 = drive.trajectoryBuilder(traj.end())
                 .lineToConstantHeading(new Vector2d(33, -37))
-                .addDisplacementMarker(() -> {
-                    colorDetectString = detectColor();
-                    telemetry.addData("color", colorDetectString);
-                    telemetry.update();
-                })
                 .build();
 
         traj3 = drive.trajectoryBuilder(traj2.end())
@@ -251,52 +256,82 @@ public class AutoProgram3 extends OpMode {
         if(!isHoming) {
             drive.update();
         }
-        colorDetectString = detectColor();
 
         switch (currentState) {
             case TRAJECTORY_1:
-                // Check if the drive class isn't busy
-                // `isBusy() == true` while it's following the trajectory
-                // Once `isBusy() == false`, the trajectory follower signals that it is finished
-                // We move on to the next state
-                // Make sure we use the async follow function
                 if (!drive.isBusy()) {
                     currentState = State.TRAJECTORY_2;
                     drive.followTrajectoryAsync(traj2);
                 }
                 break;
             case TRAJECTORY_2:
-                // Check if the drive class is busy following the trajectory
-                // Move on to the next state, TURN_1, once finished
                 if (!drive.isBusy()) {
                     currentState = State.TRAJECTORY_3;
                     drive.followTrajectoryAsync(traj3);
                 }
                 break;
             case TRAJECTORY_3:
-                // Check if the drive class is busy turning
-                // If not, move onto the next state, TRAJECTORY_3, once finished
+
                 if (!drive.isBusy()) {
                     currentState = State.TRAJECTORY_4;
                     drive.followTrajectoryAsync(traj4);
                 }
                 break;
             case TRAJECTORY_4:
-                // Check if the drive class is busy following the trajectory
-                // If not, move onto the next state, WAIT_1
+
                 if (!drive.isBusy()) {
                     currentState = State.TRAJECTORY_5;
                     drive.followTrajectoryAsync(traj5);
                 }
                 break;
             case TRAJECTORY_5:
-                // Check if the timer has exceeded the specified wait time
-                // If so, move on to the TURN_2 state
+                break;
+
+            case CENTERTRAJECTORY:
                 if (!drive.isBusy()) {
-                    currentState = State.IDLE;
+                    centerTraj = drive.trajectoryBuilder(pipePose)
+                            .lineToLinearHeading(new Pose2d(10, -37, Math.toRadians(270)))
+                            .addDisplacementMarker(() -> {
+                                rightSlide.setTargetPosition(-10);
+                                leftSlide.setTargetPosition(-10);
+                                leftArmServo.setPosition(.5);
+                                rightArmServo.setPosition(.5);
+                                clawServo.setPosition(0.24);
+                            })
+                            .build();
+                    drive.followTrajectoryAsync(centerTraj);
+                    currentState = State.PARK;
+                }
+                break;
+            case PARK:
+                if (!drive.isBusy()) {
+                    telemetry.addData("color", colorDetectString);
+                    telemetry.update();
+                    park2 = drive.trajectoryBuilder(centerTraj.end())
+                            .lineToConstantHeading(new Vector2d(36, -37))
+                            .build();
+
+                    park3 = drive.trajectoryBuilder(centerTraj.end())
+                            .lineToConstantHeading(new Vector2d(60, -37))
+                            .build();
+                    if (colorDetected == "M") {
+                        currentState = State.IDLE;
+                        break;
+                    } else if (colorDetected == "G") {
+                        drive.followTrajectoryAsync(park2);
+                        currentState = State.IDLE;
+                        break;
+                    } else if (colorDetected == "A") {
+                        drive.followTrajectoryAsync(park3);
+                        currentState = State.IDLE;
+                        break;
+                    }
                 }
                 break;
             case IDLE:
+                if (!drive.isBusy()){
+                    stop();
+                }
                 // Do nothing in IDLE
                 // currentState does not change once in IDLE
                 // This concludes the autonomous program
@@ -305,17 +340,6 @@ public class AutoProgram3 extends OpMode {
         if(isHoming) {
             homePipe(); // Calls method - Locate and position to pipe
         }
-
-        if(homed){
-            clawServo.setPosition(.3);
-        }
-//        rightSlide.setTargetPosition(-10);
-//        leftSlide.setTargetPosition(-10);
-//
-//        leftArmServo.setPosition(0);
-//        rightArmServo.setPosition(1);
-
-
     }
 
     class pipeDetect extends OpenCvPipeline {
