@@ -64,11 +64,7 @@ import java.util.List;
 
 public class ConeStackDetect extends OpMode {
 
-
-
     OpenCvWebcam webcam = null;
-
-
 
     int leftLowBound = 240;
     int leftTarget = 260;
