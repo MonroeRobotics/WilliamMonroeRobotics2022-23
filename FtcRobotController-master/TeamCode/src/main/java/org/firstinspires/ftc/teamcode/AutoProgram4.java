@@ -460,7 +460,8 @@ public class AutoProgram4 extends OpMode {
 
         //TODO:  FIX THIS!!!!!!!!!!!
         //CHECK THIS
-        //Maybe try commenting of if and use breakFollowing() in earlier trajectory?
+        //Maybe try commenting out if and use breakFollowing() in earlier trajectory?
+        //Or using drive.update() right before taking pos
         if(!isHoming && !isConeHoming) {
             drive.update();
         }
