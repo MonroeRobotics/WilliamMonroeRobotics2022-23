@@ -82,10 +82,6 @@ public class AutoProgram4 extends OpMode {
     Trajectory toPoll;
     Trajectory toCone;
 
-    Trajectory toPollCenter;
-    Trajectory toConeCenter;
-
-
     Trajectory park2;
     Trajectory park3;
 
@@ -114,8 +110,6 @@ public class AutoProgram4 extends OpMode {
     String colorDetectString = "";
     String colorDetected = "";
 
-    int coneCount = 0;
-
     int leftLowBound = 240;
     int leftTarget = 260;
     int rightTarget = 390;
@@ -143,13 +137,9 @@ public class AutoProgram4 extends OpMode {
         TRAJECTORY_4,
         TRAJECTORY_5,
         TO_POLL,
-        TO_POLL_CENTER,
-        TO_CONE_CENTER,
         TO_CONE,
-        CENTER,
         PARK,
-        IDLE,
-        HOMING
+        IDLE
     }
 
     State currentState;
@@ -163,13 +153,12 @@ public class AutoProgram4 extends OpMode {
     public void homeCone() {
         telemetry.addData("Distance", distanceSensor.getDistance(DistanceUnit.MM));
         telemetry.update();
-            if (distanceSensor.getDistance(DistanceUnit.MM) <= 38){
-                clawServo.setPosition(0.24);
+            if (distanceSensor.getDistance(DistanceUnit.MM) <= 30){
                 isConeHoming = false;
-                drive.update();
                 conePose = drive.getPoseEstimate();
                 drive.setDrivePower(new Pose2d(0, 0, 0));
-                currentState = State.TO_POLL_CENTER;
+                clawServo.setPosition(0.24);
+                currentState = State.TO_POLL;
                 telemetry.addData("STATE", currentState);
                 telemetry.update();
             }
@@ -183,7 +172,7 @@ public class AutoProgram4 extends OpMode {
 //                    drive.turnAsync(drive.getExternalHeading() + 0.02);
                     drive.setDrivePower(new Pose2d(0, .05, 0));
                 }
-                else if (distanceSensor.getDistance(DistanceUnit.MM) >= 38) {
+                else if (distanceSensor.getDistance(DistanceUnit.MM) >= 30) {
                     drive.setDrivePower(new Pose2d(.2, 0, 0));
                 }
 //                else if (xBounding < leftLowBound && yBounding > rightHighBound) {
@@ -196,7 +185,6 @@ public class AutoProgram4 extends OpMode {
     public void homePipe() {
         if (xBounding > leftLowBound && xBounding < leftTarget && yBounding > rightTarget && yBounding < rightHighBound){
             isHoming = false;
-            drive.update();
             pipePose = drive.getPoseEstimate();
             drive.setDrivePower(new Pose2d(0, 0, 0));
             clawServo.setPosition(0.38);
@@ -348,6 +336,7 @@ public class AutoProgram4 extends OpMode {
                     isHoming = true;
                 })
                 .build();
+
         currentState = State.TRAJECTORY_1;
 
         drive.followTrajectoryAsync(traj);
@@ -357,9 +346,6 @@ public class AutoProgram4 extends OpMode {
     }
 
     public void loop(){
-
-        telemetry.addData("State", currentState);
-        telemetry.addData("Cone #", coneCount);
 
 
         switch (currentState) {
@@ -402,70 +388,20 @@ public class AutoProgram4 extends OpMode {
             case TRAJECTORY_5:
                 if(!drive.isBusy()) {
                     traj5 = drive.trajectoryBuilder(traj4.end())
-                            .lineToConstantHeading(new Vector2d(50, -15))
+                            .lineToConstantHeading(new Vector2d(50, -12))
                             .addDisplacementMarker(() -> {
                                 clawServo.setPosition(0.38);
                                 isConeHoming = true;
                             })
-                            .build();
-                    currentState = State.HOMING;
+                            .build();;
                     drive.followTrajectoryAsync(traj5);
                 }
                 break;
             case TO_POLL:
                 if(!drive.isBusy()){
-                    toPoll = drive.trajectoryBuilder(toPollCenter.end())
-                            .lineToLinearHeading(pipePose)
-                            .addDisplacementMarker(() -> {
-                                clawServo.setPosition(0.38);
-                                coneCount++;
-                            })
-                            .build();
-                    currentState = State.TO_CONE_CENTER;
-                    drive.followTrajectoryAsync(toPoll);
-            }
-                break;
-            case TO_CONE_CENTER:
-                if (coneCount >= 5){
-                    currentState = State.CENTER;
-                    drive.followTrajectoryAsync(centerTraj);
-                }
-                else if(!drive.isBusy()){
-                    toConeCenter = drive.trajectoryBuilder(toPoll.end())
-                            .addTemporalMarker(0.5, () -> {
-                                rightSlide.setTargetPosition(-230);
-                                leftSlide.setTargetPosition(-230 + (44 * coneCount));
-                                leftArmServo.setPosition(0);
-                                rightArmServo.setPosition(1);
-                                clawServo.setPosition(0.24);
-                            })
-                            .lineToConstantHeading(new Vector2d(36, -12))
-                            .build();
-
-                    currentState = State.TO_CONE;
-                    drive.followTrajectoryAsync(toConeCenter);
-                }
-                break;
-            case TO_CONE:
-                if (!drive.isBusy()) {
-                    toCone = drive.trajectoryBuilder(toConeCenter.end())
-                            .addDisplacementMarker(() -> {
-                                clawServo.setPosition(0.38);
-                            })
-                            .lineToLinearHeading(conePose)
-                            .addTemporalMarker(0.5, () -> {
-                                clawServo.setPosition(0.24);
-                            })
-                            .build();
-                    currentState = State.TO_POLL_CENTER;
-                    drive.followTrajectoryAsync(toCone);
-                }
-                break;
-            case TO_POLL_CENTER:
-                if (!drive.isBusy()) {
-                    toPollCenter = drive.trajectoryBuilder(conePose)
-                            .addTemporalMarker(0.5, () -> {
-                            })
+                    telemetry.addLine("To_Poll");
+                    telemetry.update();
+                    toPoll = drive.trajectoryBuilder(conePose)
                             .addTemporalMarker(0.5, () -> {
                                 rightSlide.setTargetPosition(-1050);
                                 leftSlide.setTargetPosition(-1050);
@@ -474,30 +410,18 @@ public class AutoProgram4 extends OpMode {
                                 leftArmServo.setPosition(.72);
                                 rightArmServo.setPosition(.3);
                             })
-                            .lineToLinearHeading(new Pose2d(36, -12, Math.toRadians(300)))
+                            .lineToLinearHeading(pipePose)
+                            .addDisplacementMarker(() -> {
+                                clawServo.setPosition(0.38);
+                                currentState = State.TO_CONE;
+                            })
                             .build();
-
-
-                    currentState = State.TO_POLL;
-                    drive.followTrajectoryAsync(toPollCenter);
-                }
+                    currentState = State.TO_CONE;
+                    drive.followTrajectoryAsync(toPoll);
+            }
                 break;
-
-            case CENTER:
-                centerTraj = drive.trajectoryBuilder(pipePose)
-                        .lineToLinearHeading(new Pose2d(34, -13, Math.toRadians(270)))
-                        .addDisplacementMarker(() -> {
-                            rightSlide.setTargetPosition(-10);
-                            leftSlide.setTargetPosition(-10);
-                            leftArmServo.setPosition(.5);
-                            rightArmServo.setPosition(.5);
-                            clawServo.setPosition(0.24);
-                        })
-                        .build();
-                currentState = State.IDLE;
-                drive.followTrajectoryAsync(centerTraj);
+            case TO_CONE:
                 break;
-
 
             case PARK:
                 if (!drive.isBusy()) {
@@ -534,7 +458,13 @@ public class AutoProgram4 extends OpMode {
                 break;
         }
 
-        drive.update();
+        //TODO:  FIX THIS!!!!!!!!!!!
+        //CHECK THIS
+        //Maybe try commenting out if and use breakFollowing() in earlier trajectory?
+        //Or using drive.update() right before taking pos
+        if(!isHoming && !isConeHoming) {
+            drive.update();
+        }
 
         if(isHoming) {
             homePipe(); // Calls method - Locate and position to pipe
@@ -543,8 +473,6 @@ public class AutoProgram4 extends OpMode {
         if(isConeHoming){
             homeCone();
         }
-
-        telemetry.update();
     }
 
     class pipeDetect extends OpenCvPipeline {
