@@ -153,8 +153,9 @@ public class AutoProgram4 extends OpMode {
     public void homeCone() {
         telemetry.addData("Distance", distanceSensor.getDistance(DistanceUnit.MM));
         telemetry.update();
-            if (distanceSensor.getDistance(DistanceUnit.MM) <= 30){
+            if (distanceSensor.getDistance(DistanceUnit.MM) <= 38){
                 isConeHoming = false;
+                drive.update();
                 conePose = drive.getPoseEstimate();
                 drive.setDrivePower(new Pose2d(0, 0, 0));
                 clawServo.setPosition(0.24);
@@ -172,7 +173,7 @@ public class AutoProgram4 extends OpMode {
 //                    drive.turnAsync(drive.getExternalHeading() + 0.02);
                     drive.setDrivePower(new Pose2d(0, .05, 0));
                 }
-                else if (distanceSensor.getDistance(DistanceUnit.MM) >= 30) {
+                else if (distanceSensor.getDistance(DistanceUnit.MM) >= 38) {
                     drive.setDrivePower(new Pose2d(.2, 0, 0));
                 }
 //                else if (xBounding < leftLowBound && yBounding > rightHighBound) {
@@ -185,8 +186,9 @@ public class AutoProgram4 extends OpMode {
     public void homePipe() {
         if (xBounding > leftLowBound && xBounding < leftTarget && yBounding > rightTarget && yBounding < rightHighBound){
             isHoming = false;
-            pipePose = drive.getPoseEstimate();
             drive.setDrivePower(new Pose2d(0, 0, 0));
+            drive.update();
+            pipePose = drive.getPoseEstimate();
             clawServo.setPosition(0.38);
             homed = true;
             currentTime = System.currentTimeMillis();

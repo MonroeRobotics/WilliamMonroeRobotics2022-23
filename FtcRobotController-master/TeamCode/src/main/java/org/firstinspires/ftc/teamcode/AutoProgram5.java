@@ -116,10 +116,10 @@ public class AutoProgram5 extends OpMode {
 
     int coneCount = 0;
 
-    int leftLowBound = 240;
-    int leftTarget = 260;
-    int rightTarget = 390;
-    int rightHighBound = 410;
+    int leftLowBound = 250;
+    int leftTarget = 270;
+    int rightTarget = 380;
+    int rightHighBound = 400;
 
     int leftLowBoundCone = 200;
     int leftTargetCone = 220;
@@ -386,7 +386,7 @@ public class AutoProgram5 extends OpMode {
             case TRAJECTORY_4:
                 if (System.currentTimeMillis() > waitTime) {
                     traj4 = drive.trajectoryBuilder(pipePose)
-                            .lineToLinearHeading(new Pose2d(45, -12, Math.toRadians(0)))
+                            .lineToLinearHeading(new Pose2d(45, -15, Math.toRadians(0)))
                             .addDisplacementMarker(() -> {
                                 rightSlide.setTargetPosition(-230);
                                 leftSlide.setTargetPosition(-230);
@@ -433,13 +433,13 @@ public class AutoProgram5 extends OpMode {
                 else if(!drive.isBusy()){
                     toConeCenter = drive.trajectoryBuilder(toPoll.end())
                             .addTemporalMarker(0.5, () -> {
-                                rightSlide.setTargetPosition(-230);
+                                rightSlide.setTargetPosition(-230 + (44 * coneCount));
                                 leftSlide.setTargetPosition(-230 + (44 * coneCount));
                                 leftArmServo.setPosition(0);
                                 rightArmServo.setPosition(1);
                                 clawServo.setPosition(0.24);
                             })
-                            .lineToConstantHeading(new Vector2d(36, -12))
+                            .lineToConstantHeading(new Vector2d(32, -11))
                             .build();
 
                     currentState = State.TO_CONE;
@@ -449,13 +449,10 @@ public class AutoProgram5 extends OpMode {
             case TO_CONE:
                 if (!drive.isBusy()) {
                     toCone = drive.trajectoryBuilder(toConeCenter.end())
-                            .addDisplacementMarker(() -> {
+                            .addTemporalMarker(0.1, () -> {
                                 clawServo.setPosition(0.38);
                             })
                             .lineToLinearHeading(conePose)
-                            .addTemporalMarker(0.5, () -> {
-                                clawServo.setPosition(0.24);
-                            })
                             .build();
                     currentState = State.TO_POLL_CENTER;
                     drive.followTrajectoryAsync(toCone);
@@ -465,8 +462,9 @@ public class AutoProgram5 extends OpMode {
                 if (!drive.isBusy()) {
                     toPollCenter = drive.trajectoryBuilder(conePose)
                             .addTemporalMarker(0.5, () -> {
+                                clawServo.setPosition(0.24);
                             })
-                            .addTemporalMarker(0.5, () -> {
+                            .addTemporalMarker(0.2, () -> {
                                 rightSlide.setTargetPosition(-1050);
                                 leftSlide.setTargetPosition(-1050);
                             })
@@ -474,7 +472,7 @@ public class AutoProgram5 extends OpMode {
                                 leftArmServo.setPosition(.72);
                                 rightArmServo.setPosition(.3);
                             })
-                            .lineToLinearHeading(new Pose2d(36, -12, Math.toRadians(300)))
+                            .lineToLinearHeading(new Pose2d(32, -11, Math.toRadians(300)))
                             .build();
 
 

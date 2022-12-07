@@ -312,7 +312,7 @@ public class AutoProgram3 extends OpMode {
                             .build();
 
                     park3 = drive.trajectoryBuilder(centerTraj.end())
-                            .lineToConstantHeading(new Vector2d(60, -37))
+                            .lineToConstantHeading(new Vector2d(60, -35))
                             .build();
                     if (colorDetected == "M") {
                         currentState = State.IDLE;
