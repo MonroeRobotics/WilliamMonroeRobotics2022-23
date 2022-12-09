@@ -38,9 +38,7 @@ import static java.lang.Thread.sleep;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -65,9 +63,9 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name = "Auto Program 3", group = "Main")
+@Autonomous(name = "Auto Program Simple Right", group = "Main")
 
-public class AutoProgram3 extends OpMode {
+public class AutoProgramSimpleRight extends OpMode {
 
     SampleMecanumDrive drive;
 
@@ -191,7 +189,7 @@ public class AutoProgram3 extends OpMode {
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
 
         //sets webcam Computer Vision Pipeline to examplePipeline
-        webcam.setPipeline(new AutoProgram3.colorDetect());
+        webcam.setPipeline(new AutoProgramSimpleRight.colorDetect());
 
         //Starts streaming camera
         webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
@@ -238,7 +236,7 @@ public class AutoProgram3 extends OpMode {
         traj5 = drive.trajectoryBuilder(traj4.end())
                 .lineToLinearHeading(new Pose2d(8, -35, Math.toRadians(300)))
                 .addDisplacementMarker(() -> {
-                    webcam.setPipeline(new AutoProgram3.pipeDetect());
+                    webcam.setPipeline(new AutoProgramSimpleRight.pipeDetect());
                     isHoming = true;
                 })
                 .build();
