@@ -1,11 +1,13 @@
-package org.firstinspires.ftc.teamcode;
+package oldprogram;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
+@Disabled
 @TeleOp(name="Linear Slide Pos", group="Concept")
 public class linearSlidePos extends OpMode {
 

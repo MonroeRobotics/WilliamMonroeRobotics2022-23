@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package oldprogram;
 
 import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
 import static org.opencv.imgproc.Imgproc.MORPH_RECT;
@@ -36,6 +36,7 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -62,9 +63,10 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name = "Auto Program Super Advanced", group = "Main")
+@Disabled
+@Autonomous(name = "Auto Program 6", group = "Main")
 
-public class AutoProgram5 extends OpMode {
+public class AutoProgram6 extends OpMode {
 
     SampleMecanumDrive drive;
 
@@ -289,7 +291,7 @@ public class AutoProgram5 extends OpMode {
             @Override
             public void onOpened() {
                 //sets webcam Computer Vision Pipeline to examplePipeline
-                webcam.setPipeline(new AutoProgram5.colorDetect());
+                webcam.setPipeline(new AutoProgram6.conePipeDetect());
 //        webcam.setPipeline(new AutoProgram4.coneDetect());
                 webcam.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
             }
@@ -306,7 +308,7 @@ public class AutoProgram5 extends OpMode {
         webcamfront.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                webcamfront.setPipeline(new AutoProgram5.coneDetect());
+                webcamfront.setPipeline(new AutoProgram6.coneDetect());
                 webcamfront.startStreaming(640, 360, OpenCvCameraRotation.UPRIGHT);
             }
 
@@ -352,7 +354,7 @@ public class AutoProgram5 extends OpMode {
         traj3_2 = drive.trajectoryBuilder(traj3.end())
                 .lineToConstantHeading(new Vector2d(30, -10))
                 .addDisplacementMarker(() -> {
-                    webcam.setPipeline(new AutoProgram5.pipeDetect());
+                    webcam.setPipeline(new AutoProgram6.pipeDetect());
                     isHoming = true;
                 })
                 .build();
@@ -761,7 +763,7 @@ public class AutoProgram5 extends OpMode {
             Rect rightBound = new Rect(rightHighBoundCone, 140, 1, 79);
 
             //Creates the upper and lower range for the accepted HSV values for color of pole
-            Scalar lowHSV = new Scalar(172,80,80);
+            Scalar lowHSV = new Scalar(172,50,50);
             Scalar highHSV = new Scalar(184,255,255);
 
             //Returns Output Mat "thresh" that only contains pixels that are within low and high boundaries (lowHSV, highHSV)
@@ -817,4 +819,96 @@ public class AutoProgram5 extends OpMode {
             return outPut;
         }
     }
+
+    class conePipeDetect extends OpenCvPipeline {
+
+        //Initializing Variables
+        Mat HSV = new Mat();
+        Mat outPut = new Mat();
+        Mat threshPipe = new Mat();
+        Mat threshCone = new Mat();
+        Mat bothThresh = new Mat();
+        Mat dilate = new Mat();
+        Mat hierarchy = new Mat();
+
+        Scalar rectColor1 = new Scalar(50, 255, 255);
+
+        //Loops and processes every frame and returns desired changed
+        public Mat processFrame(Mat input) {
+
+            //changes Mat input from RGB to HSV and saves to Mat HSV
+            Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
+
+            //Creates New rectangle objects for 3 regions, Left, Right, and Center
+            Rect leftRect = new Rect(leftTarget, 140, 1, 79);
+            Rect rightRect = new Rect(rightTarget, 140, 1, 79);
+            Rect leftBound = new Rect(leftLowBound, 140, 1, 79);
+            Rect rightBound = new Rect(rightHighBound, 140, 1, 79);
+
+            //Creates the upper and lower range for the accepted HSV values for
+            // color of pole
+            Scalar pipeLowHSV = new Scalar(17,70,70);
+            Scalar pipeHighHSV = new Scalar(25,255,255);
+
+            Scalar coneLowHSV = new Scalar(0,70,70);
+            Scalar coneHighHSV = new Scalar(10,255,255);
+
+
+            //Returns Output Mat "thresh" that only contains pixels that are within low and high boundaries (lowHSV, highHSV)
+
+            Core.inRange(HSV, pipeLowHSV, pipeHighHSV, threshPipe);
+            Core.inRange(HSV, coneLowHSV, coneHighHSV, threshCone);
+
+            Core.addWeighted(threshCone, 1.0, threshPipe, 1.0, 0.0, bothThresh);
+
+
+            Imgproc.morphologyEx(bothThresh, dilate, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(2, 2)));
+
+            List<MatOfPoint> contours = new ArrayList<>();
+
+            Imgproc.findContours(dilate, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
+
+            dilate.copyTo(outPut);
+
+
+            if (contours.size() != 0) {
+                MatOfPoint2f[] contoursPoly  = new MatOfPoint2f[contours.size()];
+                Rect[] boundRect = new Rect[contours.size()];
+
+                for (int i = 0; i < contours.size(); i++) {
+                    contoursPoly[i] = new MatOfPoint2f();
+                    Imgproc.approxPolyDP(new MatOfPoint2f(contours.get(i).toArray()), contoursPoly[i], 3, true);
+                    boundRect[i] = Imgproc.boundingRect(new MatOfPoint(contoursPoly[i].toArray()));
+                }
+
+                double maxVal = 0;
+                int maxValIdx = 0;
+                for (int contourIdx = 0; contourIdx < contours.size(); contourIdx++) {
+                    double contourArea = Imgproc.contourArea(contours.get(contourIdx));
+                    if (maxVal < contourArea) {
+                        maxVal = contourArea;
+                        maxValIdx = contourIdx;
+                    }
+                }
+                xBounding = boundRect[maxValIdx].x;
+
+                yBounding = boundRect[maxValIdx].x + boundRect[maxValIdx].width;
+
+                Imgproc.rectangle(outPut, boundRect[maxValIdx], new Scalar(150, 80, 100), 3);
+            }
+
+
+            //copies thresh Mat to outPut and draws rectangles regions on the image for user to see
+
+            Imgproc.rectangle(outPut, leftRect, rectColor1, 2);
+            Imgproc.rectangle(outPut, rightRect, rectColor1, 2);
+            Imgproc.rectangle(outPut, leftBound, rectColor1, 2);
+            Imgproc.rectangle(outPut, rightBound, rectColor1, 2);
+
+
+            //Returns to display outPut Mat
+            return outPut;
+        }
+    }
+
 }

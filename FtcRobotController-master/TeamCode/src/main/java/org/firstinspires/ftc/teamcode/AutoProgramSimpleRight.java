@@ -137,7 +137,7 @@ public class AutoProgramSimpleRight extends OpMode {
 
             if (isHoming) {
                 if (xBounding > leftLowBound && yBounding < rightHighBound) {
-                    drive.setDrivePower(new Pose2d(-.1, 0, 0));
+                    drive.setDrivePower(new Pose2d(-.05, 0, 0));
                 }
                 else if (xBounding > leftTarget && yBounding > rightTarget) {
 //                    drive.turnAsync(drive.getExternalHeading() - 0.02);
@@ -148,7 +148,7 @@ public class AutoProgramSimpleRight extends OpMode {
                     drive.setDrivePower(new Pose2d(0, -.05, 0));
                 }
                 else if (xBounding < leftLowBound && yBounding > rightHighBound) {
-                   drive.setDrivePower(new Pose2d(0.1, 0, 0));
+                   drive.setDrivePower(new Pose2d(0.05, 0, 0));
                 }
             }
             //endregion

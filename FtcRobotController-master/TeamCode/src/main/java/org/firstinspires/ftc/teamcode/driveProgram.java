@@ -17,6 +17,7 @@ public class driveProgram extends LinearOpMode {
     public void runOpMode() {
         //region Variables Setup
         double motorSpeed = 2000;
+        double rawMotorSpeed = 2000;
         boolean dPMotor = false;
         double leftstickX;
         double leftstickY;
@@ -28,11 +29,13 @@ public class driveProgram extends LinearOpMode {
         double bLeft;
         double fLeft;
         double turn;
-        double regMotorSpeed = motorSpeed;
+
+        int armPos = 0;
 
         boolean isClosed = false;
 
         boolean dPSlide = false;
+        boolean dPArm = false;
         boolean bumper = false;
         int slidePos = 0;
 
@@ -95,7 +98,7 @@ public class driveProgram extends LinearOpMode {
         //endregion
 
         //region Slide Init
-        clawServo.setPosition(0.38);
+        clawServo.setPosition(0.24);
 
         leftArmServo.setPosition(0);
         rightArmServo.setPosition(1);
@@ -116,13 +119,12 @@ public class driveProgram extends LinearOpMode {
             idle();
         }
 
-
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-
-
         waitForStart();
+
+        clawServo.setPosition(0.38);
 
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -131,22 +133,26 @@ public class driveProgram extends LinearOpMode {
 
         while (opModeIsActive()) {
 
+            distance = distanceSensor.getDistance(DistanceUnit.MM);
+
+            red = colorSensor.red();
+            green = colorSensor.green();
+            blue = colorSensor.blue();
+
             leftstickX = this.gamepad1.left_stick_x;
             leftstickY = -this.gamepad1.left_stick_y;
 
             turn = this.gamepad1.right_stick_x;
 
             //region Motor Speed adjustment
-            if (this.gamepad1.dpad_up && motorSpeed < 10000) {
+            if (this.gamepad1.right_trigger > 10 && rawMotorSpeed < 10000) {
                 if (!dPMotor) {
-                    motorSpeed = motorSpeed + 500;
-                    regMotorSpeed = motorSpeed;
+                    rawMotorSpeed = rawMotorSpeed + 500;
                     dPMotor = true;
                 }
-            } else if (this.gamepad1.dpad_down && motorSpeed > 1000) {
+            } else if (this.gamepad1.left_trigger > 10 && rawMotorSpeed > 1000) {
                 if (!dPMotor) {
-                    motorSpeed = motorSpeed - 500;
-                    regMotorSpeed = motorSpeed;
+                    rawMotorSpeed = rawMotorSpeed - 500;
                     dPMotor = true;
                 }
             } else {
@@ -154,7 +160,7 @@ public class driveProgram extends LinearOpMode {
             }
 
             if(gamepad1.right_bumper && !bumper){
-                motorSpeed = motorSpeed / 2;
+                motorSpeed = motorSpeed * 1.5;
                 bumper = true;
             }
             else if(gamepad1.left_bumper && !bumper){
@@ -162,7 +168,7 @@ public class driveProgram extends LinearOpMode {
                 bumper = true;
             }
             else if(!gamepad1.left_bumper && !gamepad1.right_bumper){
-                motorSpeed = regMotorSpeed;
+                motorSpeed = rawMotorSpeed;
                 bumper = false;
             }
 
@@ -172,18 +178,32 @@ public class driveProgram extends LinearOpMode {
             direction = Math.atan2(leftstickY, leftstickX);
             magnitude = Math.sqrt(Math.pow(leftstickX, 2) + Math.pow(leftstickY, 2)) * 1.5;
 
+
+            //region precision movement
+            if(gamepad1.dpad_up){
+                magnitude = .1;
+                direction = Math.toRadians(90.0);
+            }
+            else if(gamepad1.dpad_down){
+                magnitude = .1;
+                direction = Math.toRadians(270);
+            }
+            else if(gamepad1.dpad_left){
+                magnitude = .1;
+                direction = Math.toRadians(180);
+            }
+            else if(gamepad1.dpad_right){
+                magnitude = .1;
+                direction = Math.toRadians(0);
+            }
+
+                //endregion
+
             fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
             bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
             bRight = -(motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
             fLeft = -(motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
             //endregion
-
-            // Set color values
-            red = colorSensor.red();
-            green = colorSensor.green();
-            blue = colorSensor.blue();
-
-            distance = distanceSensor.getDistance(DistanceUnit.MM);
 
             //region Linear Slide Movement
             int rightSlidePos = rightSlide.getCurrentPosition();
@@ -206,8 +226,8 @@ public class driveProgram extends LinearOpMode {
                 leftSlide.setTargetPosition(-1050);
             }
             else if (slidePos ==  2){
-                rightSlide.setTargetPosition(-480);
-                leftSlide.setTargetPosition(-480);
+                rightSlide.setTargetPosition(-530);
+                leftSlide.setTargetPosition(-530);
             }
             else if (slidePos ==  1){
                 rightSlide.setTargetPosition(-160);
@@ -222,6 +242,8 @@ public class driveProgram extends LinearOpMode {
             //region Claw Servo Movement
 
             if ((red > 400 && distance < 40) && !isClosed) {
+                gamepad1.rumble(250);
+                gamepad2.rumble(250);
                 isClosed = true;
                 clawServo.setPosition(.24);
             }
@@ -232,17 +254,43 @@ public class driveProgram extends LinearOpMode {
             }
             else if (gamepad2.b){
                 clawServo.setPosition(.24);
+                isClosed = true;
             }
 
-            if(gamepad2.y){
+
+            if(gamepad2.dpad_right && armPos < 3){
+               if(!dPArm) {
+                   armPos++;
+                   dPArm = true;
+                   clawServo.setPosition(.20);
+               }
+            }
+            if(gamepad2.dpad_left && armPos > 0){
+                if(!dPArm) {
+                    armPos--;
+                    dPArm = true;
+                    clawServo.setPosition(.20);
+                }
+            }
+            else if (!gamepad2.dpad_left && !gamepad2.dpad_right){
+                dPArm = false;
+            }
+
+            if(armPos == 0){
                 leftArmServo.setPosition(0);
                 rightArmServo.setPosition(1);
-                clawServo.setPosition(.20);
             }
-            else if(gamepad2.x){
+            else if(armPos == 1){
+                leftArmServo.setPosition(.3);
+                rightArmServo.setPosition(.75);
+            }
+            else if(armPos == 2){
                 leftArmServo.setPosition(.75);
                 rightArmServo.setPosition(.3);
-                clawServo.setPosition(.20);
+            }
+            else if(armPos == 3){
+                leftArmServo.setPosition(1);
+                rightArmServo.setPosition(0);
             }
             //endregion
 
@@ -280,28 +328,21 @@ public class driveProgram extends LinearOpMode {
             //endregion
 
             //region Telemetry Data
+            telemetry.addData("Status", "Running");
             telemetry.addData("motorSpeed", motorSpeed);
             telemetry.addData("direction", direction);
             telemetry.addData("mag", magnitude);
-            telemetry.addData("Status", "Initialized");
+
             telemetry.addData("motor Ticks", frontLeft.getCurrentPosition());
 
             telemetry.addData("right slide", rightSlidePos);
             telemetry.addData("left slide", leftSlidePos);
-            telemetry.addData("Slide Position", slidePos);
-
-            telemetry.addData("Red", red);
-            telemetry.addData("Green", green);
-            telemetry.addData("Blue", blue);
 
             telemetry.addData("Distance", distance);
 
-            telemetry.addData("isClosed", isClosed);
+            telemetry.addData("armPos", armPos);
 
             telemetry.update();
-
-
-
             //endregion
         }
     }
