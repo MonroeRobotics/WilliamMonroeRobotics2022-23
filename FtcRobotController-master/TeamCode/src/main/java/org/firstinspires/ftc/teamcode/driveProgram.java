@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
@@ -32,12 +33,14 @@ public class driveProgram extends LinearOpMode {
 
         int armPos = 0;
 
+
         boolean isClosed = false;
 
         boolean dPSlide = false;
         boolean dPArm = false;
         boolean bumper = false;
         int slidePos = 0;
+        int slideTarget = 0;
 
         int red;
         int green;
@@ -49,6 +52,7 @@ public class driveProgram extends LinearOpMode {
         //endregion
 
         //region Hardware Map
+        TouchSensor limit = hardwareMap.get(TouchSensor.class, "limit");
         DcMotorEx backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
         DcMotorEx backRight = hardwareMap.get(DcMotorEx.class, "backRight");
         DcMotorEx frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
@@ -62,23 +66,6 @@ public class driveProgram extends LinearOpMode {
 
         ColorSensor colorSensor = hardwareMap.get(ColorSensor.class, "color");
         DistanceSensor distanceSensor = hardwareMap.get(DistanceSensor.class, "distance");
-
-        BNO055IMU imu = hardwareMap.get(BNO055IMU.class, "imu");
-
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-
-        parameters.mode = BNO055IMU.SensorMode.IMU;
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.loggingEnabled = false;
-
-
-
-        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
-        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
-        // and named "imu".
-
-        imu.initialize(parameters);
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -97,27 +84,37 @@ public class driveProgram extends LinearOpMode {
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //endregion
 
+
+
         //region Slide Init
         clawServo.setPosition(0.24);
 
         leftArmServo.setPosition(0);
         rightArmServo.setPosition(1);
 
+        rightSlide.setTargetPosition(0);
+        leftSlide.setTargetPosition(0);
+        rightSlide.setPower(0.25);
+        leftSlide.setPower(0.25);
+        rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        while(!limit.isPressed()){
+            slideTarget = slideTarget + 1;
+            rightSlide.setTargetPosition(slideTarget);
+            leftSlide.setTargetPosition(slideTarget);
+        }
+
+        leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
         rightSlide.setTargetPosition(-10);
         leftSlide.setTargetPosition(-10);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightSlide.setPower(0.4);
-        leftSlide.setPower(0.4);
-
+        rightSlide.setPower(0.25);
+        leftSlide.setPower(0.25);
         //endregion
-
-        //Wait for Calibrate Gyro
-        while (!isStopRequested() && !imu.isGyroCalibrated())
-        {
-            sleep(50);
-            idle();
-        }
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
@@ -241,6 +238,10 @@ public class driveProgram extends LinearOpMode {
 
             //region Claw Servo Movement
 
+            if ((blue > 400 && distance < 40) && !isClosed) {
+                isClosed = true;
+                clawServo.setPosition(.24);
+            }
             if ((red > 400 && distance < 40) && !isClosed) {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);

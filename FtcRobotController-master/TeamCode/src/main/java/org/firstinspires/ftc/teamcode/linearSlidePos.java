@@ -1,4 +1,4 @@
-package oldprogram;
+package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -7,7 +7,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
 
-@Disabled
 @TeleOp(name="Linear Slide Pos", group="Concept")
 public class linearSlidePos extends OpMode {
 
@@ -21,19 +20,18 @@ public class linearSlidePos extends OpMode {
     @Override
     public void init(){
         leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
-//
+
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-//
+
         rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         leftArmServo = hardwareMap.get(Servo.class, "leftArmServo");
         rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
         clawServo = hardwareMap.get(Servo.class, "clawServo");
 
 
-        //-1000
     }
 
     @Override

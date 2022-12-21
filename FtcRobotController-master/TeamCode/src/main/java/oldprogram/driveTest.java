@@ -8,6 +8,7 @@ Copyright&copy; 2022 All Rights Reserved*
 
 package oldprogram;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -15,7 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
+@Disabled
 @TeleOp(name="DriveTest", group="Concept")
 public class driveTest extends OpMode {
 
