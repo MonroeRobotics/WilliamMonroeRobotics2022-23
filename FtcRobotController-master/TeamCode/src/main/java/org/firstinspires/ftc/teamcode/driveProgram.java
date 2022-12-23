@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -11,6 +10,8 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+
+//我愛辣妹
 
 @TeleOp(name = "Drive Program", group = "Main")
 public class driveProgram extends LinearOpMode {
@@ -33,6 +34,7 @@ public class driveProgram extends LinearOpMode {
 
         int armPos = 0;
 
+        boolean homing = false;
 
         boolean isClosed = false;
 
@@ -43,7 +45,6 @@ public class driveProgram extends LinearOpMode {
         int slideTarget = 0;
 
         int red;
-        int green;
         int blue;
 
         double distance;
@@ -99,8 +100,8 @@ public class driveProgram extends LinearOpMode {
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
-        while(!limit.isPressed()){
-            slideTarget = slideTarget + 1;
+        while(!limit.isPressed() && !gamepad2.start){
+            slideTarget ++;
             rightSlide.setTargetPosition(slideTarget);
             leftSlide.setTargetPosition(slideTarget);
         }
@@ -108,12 +109,15 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        rightSlide.setTargetPosition(-10);
-        leftSlide.setTargetPosition(-10);
+
+
+        rightSlide.setTargetPosition(10);
+        leftSlide.setTargetPosition(10);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.25);
         leftSlide.setPower(0.25);
+        slideTarget = 10;
         //endregion
 
         telemetry.addData("Status", "Initialized");
@@ -133,7 +137,6 @@ public class driveProgram extends LinearOpMode {
             distance = distanceSensor.getDistance(DistanceUnit.MM);
 
             red = colorSensor.red();
-            green = colorSensor.green();
             blue = colorSensor.blue();
 
             leftstickX = this.gamepad1.left_stick_x;
@@ -209,36 +212,71 @@ public class driveProgram extends LinearOpMode {
             if (gamepad2.dpad_up && slidePos < 3 && !dPSlide){
                 slidePos++;
                 dPSlide = true;
+                if (slidePos == 3) {
+                    slideTarget = 800;
+                } else if (slidePos == 2) {
+                    slideTarget = 500;
+                } else if (slidePos == 1) {
+                    slideTarget = 100;
+                } else if (slidePos == 0) {
+                    slideTarget = 10;
+                }
             }
             else if (gamepad2.dpad_down && slidePos > 0 && !dPSlide){
                 slidePos--;
                 dPSlide = true;
+                if (slidePos == 3) {
+                    slideTarget = 800;
+                } else if (slidePos == 2) {
+                    slideTarget = 500;
+                } else if (slidePos == 1) {
+                    slideTarget = 100;
+                } else if (slidePos == 0) {
+                    slideTarget = 10;
+                }
             }
             else if (!gamepad2.dpad_down && !gamepad2.dpad_up){
                 dPSlide = false;
             }
 
-            if (slidePos ==  3){
-                rightSlide.setTargetPosition(-1050);
-                leftSlide.setTargetPosition(-1050);
-            }
-            else if (slidePos ==  2){
-                rightSlide.setTargetPosition(-530);
-                leftSlide.setTargetPosition(-530);
-            }
-            else if (slidePos ==  1){
-                rightSlide.setTargetPosition(-160);
-                leftSlide.setTargetPosition(-160);
-            }
-            else if (slidePos ==  0){
-                rightSlide.setTargetPosition(-10);
-                leftSlide.setTargetPosition(-10);
+
+            if(!homing && gamepad2.right_trigger > 0.5 && gamepad2.left_trigger > 0.5) {
+                if (gamepad2.right_bumper) {
+                    slideTarget += 10;
+                }
+                else if (gamepad2.left_bumper){
+                    slideTarget -= 10;
+                }
+
             }
             //endregion
+
+            if(gamepad2.start & !homing){
+                homing = true;
+            }
+
+            if(homing){
+
+                slideTarget--;
+
+                if(limit.isPressed()){
+                    leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+                    rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+                    rightSlide.setTargetPosition(10);
+                    leftSlide.setTargetPosition(10);
+                    rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+                    homing = false;
+                }
+            }
 
             //region Claw Servo Movement
 
             if ((blue > 400 && distance < 40) && !isClosed) {
+                gamepad1.rumble(250);
+                gamepad2.rumble(250);
                 isClosed = true;
                 clawServo.setPosition(.24);
             }
@@ -326,6 +364,10 @@ public class driveProgram extends LinearOpMode {
             frontRight.setVelocity(Math.abs(fRight));
             backRight.setVelocity(Math.abs(bRight));
             frontLeft.setVelocity(Math.abs(fLeft));
+
+            leftSlide.setTargetPosition(slideTarget);
+            rightSlide.setTargetPosition(slideTarget);
+
             //endregion
 
             //region Telemetry Data
