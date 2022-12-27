@@ -114,8 +114,8 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setTargetPosition(10);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        rightSlide.setPower(0.25);
-        leftSlide.setPower(0.25);
+        rightSlide.setPower(0.5);
+        leftSlide.setPower(0.5);
         slideTarget = 10;
         //endregion
 
@@ -197,9 +197,9 @@ public class driveProgram extends LinearOpMode {
 
                 //endregion
 
-            fRight = (motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            fRight = -(motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
             bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            bRight = -(motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
+            bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
             fLeft = -(motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
             //endregion
 
@@ -211,11 +211,11 @@ public class driveProgram extends LinearOpMode {
                 slidePos++;
                 dPSlide = true;
                 if (slidePos == 3) {
-                    slideTarget = 800;
+                    slideTarget = 750;
                 } else if (slidePos == 2) {
                     slideTarget = 500;
                 } else if (slidePos == 1) {
-                    slideTarget = 100;
+                    slideTarget = 300;
                 } else if (slidePos == 0) {
                     slideTarget = 10;
                 }
@@ -224,11 +224,11 @@ public class driveProgram extends LinearOpMode {
                 slidePos--;
                 dPSlide = true;
                 if (slidePos == 3) {
-                    slideTarget = 800;
+                    slideTarget = 750;
                 } else if (slidePos == 2) {
                     slideTarget = 500;
                 } else if (slidePos == 1) {
-                    slideTarget = 100;
+                    slideTarget = 300;
                 } else if (slidePos == 0) {
                     slideTarget = 10;
                 }

@@ -177,8 +177,8 @@ public class AutoProgramSimpleRight extends OpMode {
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        rightSlide.setTargetPosition(-10);
-        leftSlide.setTargetPosition(-10);
+        rightSlide.setTargetPosition(10);
+        leftSlide.setTargetPosition(10);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.4);
@@ -224,8 +224,8 @@ public class AutoProgramSimpleRight extends OpMode {
         traj3 = drive.trajectoryBuilder(traj2.end())
                 .lineToConstantHeading(new Vector2d(33, -31))
                 .addDisplacementMarker(() -> {
-                    rightSlide.setTargetPosition(-1050);
-                    leftSlide.setTargetPosition(-1050);
+                    rightSlide.setTargetPosition(750);
+                    leftSlide.setTargetPosition(750);
                 })
                 .build();
 
@@ -290,8 +290,8 @@ public class AutoProgramSimpleRight extends OpMode {
                     centerTraj = drive.trajectoryBuilder(pipePose)
                             .lineToLinearHeading(new Pose2d(10, -37, Math.toRadians(270)))
                             .addDisplacementMarker(() -> {
-                                rightSlide.setTargetPosition(-10);
-                                leftSlide.setTargetPosition(-10);
+                                rightSlide.setTargetPosition(10);
+                                leftSlide.setTargetPosition(10);
                                 leftArmServo.setPosition(.5);
                                 rightArmServo.setPosition(.5);
                                 clawServo.setPosition(0.24);
