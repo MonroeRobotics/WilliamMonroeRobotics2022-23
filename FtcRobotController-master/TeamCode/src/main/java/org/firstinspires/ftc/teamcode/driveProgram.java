@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 public class driveProgram extends LinearOpMode {
 
     public void runOpMode() {
+
         //region Variables Setup
         double motorSpeed = 2000;
         double rawMotorSpeed = 2000;
@@ -85,8 +86,6 @@ public class driveProgram extends LinearOpMode {
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         //endregion
 
-
-
         //region Slide Init
         clawServo.setPosition(0.24);
 
@@ -100,6 +99,7 @@ public class driveProgram extends LinearOpMode {
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
+        //slide init homing
         while(!limit.isPressed() && !gamepad2.start){
             slideTarget ++;
             rightSlide.setTargetPosition(slideTarget);
@@ -108,7 +108,6 @@ public class driveProgram extends LinearOpMode {
 
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-
 
 
         rightSlide.setTargetPosition(10);
@@ -171,7 +170,6 @@ public class driveProgram extends LinearOpMode {
                 motorSpeed = rawMotorSpeed;
                 bumper = false;
             }
-
             //endregion
 
             //region Math For Wheel Movement
@@ -239,7 +237,6 @@ public class driveProgram extends LinearOpMode {
                 dPSlide = false;
             }
 
-
             if(!homing && gamepad2.right_trigger > 0.5 && gamepad2.left_trigger > 0.5) {
                 if (gamepad2.right_bumper) {
                     slideTarget += 10;
@@ -251,6 +248,7 @@ public class driveProgram extends LinearOpMode {
             }
             //endregion
 
+            //region Slide Homing
             if(gamepad2.start & !homing){
                 homing = true;
             }
@@ -271,6 +269,7 @@ public class driveProgram extends LinearOpMode {
                     homing = false;
                 }
             }
+            //endregion
 
             //region Claw Servo Movement
 
@@ -367,7 +366,6 @@ public class driveProgram extends LinearOpMode {
 
             leftSlide.setTargetPosition(slideTarget);
             rightSlide.setTargetPosition(slideTarget);
-
             //endregion
 
             //region Telemetry Data
