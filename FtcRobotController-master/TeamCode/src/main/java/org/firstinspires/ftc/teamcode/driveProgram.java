@@ -279,13 +279,13 @@ public class driveProgram extends LinearOpMode {
 
             //region Claw Servo Movement
 
-            if ((blue > 400 && distance < 40) && !isClosed) {
+            if ((blue > 200 && distance < 50) && !isClosed) {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);
                 isClosed = true;
                 clawServo.setPosition(.24);
             }
-            if ((red > 400 && distance < 40) && !isClosed) {
+            if ((red > 200 && distance < 50) && !isClosed) {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);
                 isClosed = true;
