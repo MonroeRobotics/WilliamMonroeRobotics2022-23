@@ -66,7 +66,7 @@ import java.util.List;
 @Disabled
 @Autonomous(name = "Auto Program 6", group = "Main")
 
-public class AutoProgram6 extends OpMode {
+public class  AutoProgram6 extends OpMode {
 
     SampleMecanumDrive drive;
 

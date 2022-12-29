@@ -244,8 +244,8 @@ public class AutoProgram4 extends OpMode {
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        rightSlide.setTargetPosition(-10);
-        leftSlide.setTargetPosition(-10);
+        rightSlide.setTargetPosition(10);
+        leftSlide.setTargetPosition(10);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.4);

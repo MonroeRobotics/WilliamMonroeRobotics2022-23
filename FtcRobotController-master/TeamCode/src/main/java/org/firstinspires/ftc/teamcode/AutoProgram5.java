@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package oldprogram;
+package org.firstinspires.ftc.teamcode;
 
 import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
 import static org.opencv.imgproc.Imgproc.MORPH_RECT;
@@ -36,7 +36,6 @@ import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -63,7 +62,6 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Disabled
 @Autonomous(name = "Auto Program Super Advanced", group = "Main")
 
 public class AutoProgram5 extends OpMode {
@@ -121,10 +119,10 @@ public class AutoProgram5 extends OpMode {
 
     int coneCount = 0;
 
-    int leftLowBound = 250;
-    int leftTarget = 270;
-    int rightTarget = 380;
-    int rightHighBound = 400;
+    int leftLowBound = 280;
+    int leftTarget = 300;
+    int rightTarget = 410;
+    int rightHighBound = 430;
 
     int leftLowBoundCone = 200;
     int leftTargetCone = 220;
@@ -183,11 +181,11 @@ public class AutoProgram5 extends OpMode {
             else if (isConeHoming) {
                 if (conexBounding > leftTargetCone && coneyBounding > rightTargetCone) {
 //                    drive.turnAsync(drive.getExternalHeading() - 0.02);
-                    drive.setDrivePower(new Pose2d(0, -.05, 0));
+                    drive.setDrivePower(new Pose2d(0, -.1, 0));
                 }
                 else if (conexBounding < leftTargetCone && coneyBounding < rightTargetCone) {
 //                    drive.turnAsync(drive.getExternalHeading() + 0.02);
-                    drive.setDrivePower(new Pose2d(0, .05, 0));
+                    drive.setDrivePower(new Pose2d(0, .1, 0));
                 }
                 else if (distanceSensor.getDistance(DistanceUnit.MM) >= 38) {
                     drive.setDrivePower(new Pose2d(.2, 0, 0));
@@ -223,11 +221,11 @@ public class AutoProgram5 extends OpMode {
             }
             else if (xBounding > leftTarget && yBounding > rightTarget) {
 //                    drive.turnAsync(drive.getExternalHeading() - 0.02);
-                drive.setDrivePower(new Pose2d(0, .05, 0));
+                drive.setDrivePower(new Pose2d(0, .1, 0));
             }
             else if (xBounding < leftTarget && yBounding < rightTarget) {
 //                    drive.turnAsync(drive.getExternalHeading() + 0.02);
-                drive.setDrivePower(new Pose2d(0, -.05, 0));
+                drive.setDrivePower(new Pose2d(0, -.1, 0));
             }
             else if (xBounding < leftLowBound && yBounding > rightHighBound) {
                 drive.setDrivePower(new Pose2d(0.1, 0, 0));
@@ -262,8 +260,8 @@ public class AutoProgram5 extends OpMode {
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        rightSlide.setTargetPosition(-10);
-        leftSlide.setTargetPosition(-10);
+        rightSlide.setTargetPosition(10);
+        leftSlide.setTargetPosition(10);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.4);
@@ -342,8 +340,8 @@ public class AutoProgram5 extends OpMode {
         traj2 = drive.trajectoryBuilder(traj.end())
                 .lineToConstantHeading(new Vector2d(36, 5))
                 .addDisplacementMarker(() -> {
-                    rightSlide.setTargetPosition(-1050);
-                    leftSlide.setTargetPosition(-1050);
+                    rightSlide.setTargetPosition(750);
+                    leftSlide.setTargetPosition(750);
                 })
                 .build();
 
@@ -394,8 +392,8 @@ public class AutoProgram5 extends OpMode {
                     traj4 = drive.trajectoryBuilder(pipePose)
                             .lineToLinearHeading(new Pose2d(45, -15, Math.toRadians(0)))
                             .addDisplacementMarker(() -> {
-                                rightSlide.setTargetPosition(-230);
-                                leftSlide.setTargetPosition(-230);
+                                rightSlide.setTargetPosition(230);
+                                leftSlide.setTargetPosition(230);
                                 leftArmServo.setPosition(0);
                                 rightArmServo.setPosition(1);
                                 clawServo.setPosition(0.24);
@@ -441,8 +439,8 @@ public class AutoProgram5 extends OpMode {
                 else if(!drive.isBusy()){
                     toConeCenter = drive.trajectoryBuilder(toPoll.end())
                             .addTemporalMarker(0.5, () -> {
-                                rightSlide.setTargetPosition(-230 + (44 * coneCount));
-                                leftSlide.setTargetPosition(-230 + (44 * coneCount));
+                                rightSlide.setTargetPosition(200 - (47 * coneCount));
+                                leftSlide.setTargetPosition(200 - (47 * coneCount));
                                 leftArmServo.setPosition(0);
                                 rightArmServo.setPosition(1);
                                 clawServo.setPosition(0.24);
@@ -475,8 +473,8 @@ public class AutoProgram5 extends OpMode {
                     if (waitTime < System.currentTimeMillis()) {
                         toPollCenter = drive.trajectoryBuilder(conePoseAdj)
                                 .addTemporalMarker(0.4, () -> {
-                                    rightSlide.setTargetPosition(-1050);
-                                    leftSlide.setTargetPosition(-1050);
+                                    rightSlide.setTargetPosition(750);
+                                    leftSlide.setTargetPosition(750);
                                 })
                                 .addDisplacementMarker(() -> {
                                     leftArmServo.setPosition(.72);
@@ -499,8 +497,8 @@ public class AutoProgram5 extends OpMode {
 
                                 })
                                 .addTemporalMarker(0.2, () -> {
-                                    rightSlide.setTargetPosition(-1050);
-                                    leftSlide.setTargetPosition(-1050);
+                                    rightSlide.setTargetPosition(750);
+                                    leftSlide.setTargetPosition(750);
                                 })
                                 .addDisplacementMarker(() -> {
                                     leftArmServo.setPosition(.72);
@@ -518,8 +516,8 @@ public class AutoProgram5 extends OpMode {
                 centerTraj = drive.trajectoryBuilder(pipePose)
                         .lineToLinearHeading(new Pose2d(34, -13, Math.toRadians(270)))
                         .addDisplacementMarker(() -> {
-                            rightSlide.setTargetPosition(-10);
-                            leftSlide.setTargetPosition(-10);
+                            rightSlide.setTargetPosition(10);
+                            leftSlide.setTargetPosition(10);
                             leftArmServo.setPosition(.5);
                             rightArmServo.setPosition(.5);
                             clawServo.setPosition(0.24);

@@ -100,7 +100,7 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //slide init homing
-        while(!limit.isPressed() && !gamepad2.start){
+        while(!limit.isPressed() && (!gamepad2.start && !gamepad1.start) ){
             slideTarget ++;
             rightSlide.setTargetPosition(slideTarget);
             leftSlide.setTargetPosition(slideTarget);
@@ -211,12 +211,15 @@ public class driveProgram extends LinearOpMode {
                 slidePos++;
                 dPSlide = true;
                 if (slidePos == 3) {
-                    slideTarget = 750;
-                } else if (slidePos == 2) {
-                    slideTarget = 500;
-                } else if (slidePos == 1) {
-                    slideTarget = 300;
-                } else if (slidePos == 0) {
+                    slideTarget = 800;
+                }
+                else if (slidePos == 2) {
+                    slideTarget = 470;
+                }
+                else if (slidePos == 1) {
+                    slideTarget = 150;
+                }
+                else if (slidePos == 0) {
                     slideTarget = 10;
                 }
             }
@@ -224,12 +227,15 @@ public class driveProgram extends LinearOpMode {
                 slidePos--;
                 dPSlide = true;
                 if (slidePos == 3) {
-                    slideTarget = 750;
-                } else if (slidePos == 2) {
-                    slideTarget = 500;
-                } else if (slidePos == 1) {
-                    slideTarget = 300;
-                } else if (slidePos == 0) {
+                    slideTarget = 800;
+                }
+                else if (slidePos == 2) {
+                    slideTarget = 470;
+                }
+                else if (slidePos == 1) {
+                    slideTarget = 150;
+                }
+                else if (slidePos == 0) {
                     slideTarget = 10;
                 }
             }
@@ -249,13 +255,13 @@ public class driveProgram extends LinearOpMode {
             //endregion
 
             //region Slide Homing
-            if(gamepad2.start & !homing){
+            if(gamepad2.start && gamepad2.back && !homing && !limit.isPressed()){
                 homing = true;
             }
 
             if(homing){
 
-                slideTarget--;
+                slideTarget -= 2;
 
                 if(limit.isPressed()){
                     leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -288,6 +294,7 @@ public class driveProgram extends LinearOpMode {
 
             if (gamepad2.a){
                 clawServo.setPosition(.38);
+                armPos = 0;
                 isClosed = false;
             }
             else if (gamepad2.b){
@@ -296,7 +303,7 @@ public class driveProgram extends LinearOpMode {
             }
 
 
-            if(gamepad2.dpad_right && armPos < 3){
+            if(gamepad2.dpad_right && armPos < 2){
                if(!dPArm) {
                    armPos++;
                    dPArm = true;
@@ -325,10 +332,6 @@ public class driveProgram extends LinearOpMode {
             else if(armPos == 2){
                 leftArmServo.setPosition(.75);
                 rightArmServo.setPosition(.3);
-            }
-            else if(armPos == 3){
-                leftArmServo.setPosition(1);
-                rightArmServo.setPosition(0);
             }
             //endregion
 
