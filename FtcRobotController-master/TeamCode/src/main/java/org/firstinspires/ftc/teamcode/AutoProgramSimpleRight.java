@@ -90,7 +90,7 @@ public class AutoProgramSimpleRight extends OpMode {
     Servo leftArmServo;
     Servo rightArmServo;
 
-
+    double targetTime;
 
     String colorDetectString = "";
     String colorDetected = "";
@@ -131,24 +131,25 @@ public class AutoProgramSimpleRight extends OpMode {
                 pipePose = drive.getPoseEstimate();
                 drive.setDrivePower(new Pose2d(0, 0, 0));
                 clawServo.setPosition(0.38);
+                targetTime = System.currentTimeMillis() + 500;
                 currentState = State.CENTERTRAJECTORY;
                 homed = true;
             }
 
             if (isHoming) {
                 if (xBounding > leftLowBound && yBounding < rightHighBound) {
-                    drive.setDrivePower(new Pose2d(-.05, 0, 0));
+                    drive.setDrivePower(new Pose2d(-0.1, 0, 0));
                 }
                 else if (xBounding > leftTarget && yBounding > rightTarget) {
 //                    drive.turnAsync(drive.getExternalHeading() - 0.02);
-                    drive.setDrivePower(new Pose2d(0, .05, 0));
+                    drive.setDrivePower(new Pose2d(0, 0.1, 0));
                 }
                 else if (xBounding < leftTarget && yBounding < rightTarget) {
 //                    drive.turnAsync(drive.getExternalHeading() + 0.02);
-                    drive.setDrivePower(new Pose2d(0, -.05, 0));
+                    drive.setDrivePower(new Pose2d(0, -0.1, 0));
                 }
                 else if (xBounding < leftLowBound && yBounding > rightHighBound) {
-                   drive.setDrivePower(new Pose2d(0.05, 0, 0));
+                   drive.setDrivePower(new Pose2d(0.1, 0, 0));
                 }
             }
             //endregion
@@ -286,7 +287,7 @@ public class AutoProgramSimpleRight extends OpMode {
                 break;
 
             case CENTERTRAJECTORY:
-                if (!drive.isBusy()) {
+                if (!drive.isBusy() && targetTime < System.currentTimeMillis()) {
                     centerTraj = drive.trajectoryBuilder(pipePose)
                             .lineToLinearHeading(new Pose2d(10, -37, Math.toRadians(270)))
                             .addDisplacementMarker(() -> {
@@ -312,6 +313,8 @@ public class AutoProgramSimpleRight extends OpMode {
                     park3 = drive.trajectoryBuilder(centerTraj.end())
                             .lineToConstantHeading(new Vector2d(60, -35))
                             .build();
+
+
                     if (colorDetected == "M") {
                         currentState = State.IDLE;
                         break;
@@ -328,7 +331,15 @@ public class AutoProgramSimpleRight extends OpMode {
                 break;
             case IDLE:
                 if (!drive.isBusy()){
-                    stop();
+                    clawServo.setPosition(0.38);
+                    leftArmServo.setPosition(0);
+                    rightArmServo.setPosition(1);
+                    rightSlide.setTargetPosition(10);
+                    leftSlide.setTargetPosition(10);
+                    rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+                    rightSlide.setPower(0.5);
+                    leftSlide.setPower(0.5);
                 }
                 // Do nothing in IDLE
                 // currentState does not change once in IDLE
