@@ -11,8 +11,6 @@ import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
-//我愛辣妹
-
 @TeleOp(name = "Drive Program", group = "Main")
 public class driveProgram extends LinearOpMode {
 
