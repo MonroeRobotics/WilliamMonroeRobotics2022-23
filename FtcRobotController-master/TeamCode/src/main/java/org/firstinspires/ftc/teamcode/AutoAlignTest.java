@@ -4,6 +4,7 @@ import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
 import static org.opencv.imgproc.Imgproc.MORPH_RECT;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
@@ -25,20 +26,24 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
+@Autonomous(name="Auto Align Test")
 public class AutoAlignTest extends OpMode {
     OpenCvWebcam webcam;
-    WebcamName webcamNameFront;
     int cameraMonitorViewId;
 
     double lBounding;
     double rBounding;
 
-    int leftTarget = 300;
-    int rightTarget = 410;
+    int leftTarget = 330;
+    int rightTarget = 440;
 
-    double baseSpeed = 0.1;
-    double multipler = 0.3;
+    double baseSpeedVert = 0.01;
+    double baseSpeedHorz = 0.01;
+    double motorVertical;
+    double motorHorizontal;
+    double multiplier = 0.25;
     int aOffset = 100;
+
 
     SampleMecanumDrive drive;
 
@@ -59,6 +64,11 @@ public class AutoAlignTest extends OpMode {
 
             }
         });
+
+        drive = new SampleMecanumDrive(hardwareMap);
+
+        telemetry.addLine("Init Done");
+
     }
 
     public void loop(){
@@ -67,7 +77,7 @@ public class AutoAlignTest extends OpMode {
         double targetWidth = rightTarget - leftTarget;
 
         //find center of poles and target
-        double poleCenter = lBounding + (poleWidth  / 2);
+        double poleCenter = lBounding + (poleWidth / 2);
         double targetCenter = leftTarget + (targetWidth / 2);
 
         //get center distance
@@ -75,12 +85,52 @@ public class AutoAlignTest extends OpMode {
 
         double wOffset = targetWidth - poleWidth;
 
+
+
         //get motor powers
-        double motorVertical = multipler * (wOffset / aOffset) + baseSpeed;
-        double motorHorizontal = multipler * (cOffset / aOffset) + baseSpeed;
+
+        if (wOffset < 0){
+            baseSpeedVert = Math.abs(baseSpeedVert) * -1;
+        }
+        else{
+            baseSpeedVert = Math.abs(baseSpeedVert);
+        }
+        if (cOffset < 0){
+
+            baseSpeedHorz = Math.abs(baseSpeedHorz) * -1;
+        }
+        else{
+            baseSpeedHorz = Math.abs(baseSpeedHorz);
+        }
+
+        if(Math.abs(wOffset) > 15) {
+            motorVertical = multiplier * (wOffset / aOffset) + baseSpeedVert;
+        }
+        else{
+            motorVertical = 0;
+        }
+
+        if(Math.abs(cOffset) > 15) {
+            motorHorizontal = multiplier * (cOffset / aOffset) + baseSpeedHorz;
+        }
+        else{
+            motorHorizontal = 0;
+        }
+
 
         //set drive motors
-        drive.setDrivePower(new Pose2d(motorHorizontal, motorVertical, 0));
+        drive.setDrivePower(new Pose2d(-motorVertical, -motorHorizontal, 0));
+
+        telemetry.addData("cOff", cOffset);
+        telemetry.addData("wOff", wOffset);
+        telemetry.addData("motorHorz", motorHorizontal);
+        telemetry.addData("motorVerti", motorVertical);
+        telemetry.addData("baseHorz", baseSpeedHorz);
+        telemetry.addData("baseVert", baseSpeedVert);
+
+//        if (Math.abs(wOffset) < 5 && Math.abs(cOffset) < 5){
+//            stop();
+//        }
     }
 
     class pipeDetect extends OpenCvPipeline{
@@ -93,10 +143,13 @@ public class AutoAlignTest extends OpMode {
         public Mat processFrame(Mat input){
             Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
 
-            Scalar lowHSV = new Scalar(17,70,70);
-            Scalar highHSV = new Scalar(25,255,255);
+            Scalar lowHSV = new Scalar(15,70,70);
+            Scalar highHSV = new Scalar(28,255,255);
 
             Core.inRange(HSV, lowHSV, highHSV, thresh);
+
+            Rect leftRect = new Rect(leftTarget, 140, 1, 79);
+            Rect rightRect = new Rect(rightTarget, 140, 1, 79);
 
 
             Imgproc.morphologyEx(thresh, dilate, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(5, 5)));
@@ -132,6 +185,9 @@ public class AutoAlignTest extends OpMode {
 
                 Imgproc.rectangle(outPut, boundRect[maxValIdx], new Scalar(150, 80, 100), 3);
             }
+
+            Imgproc.rectangle(outPut, leftRect, new Scalar(150, 80, 100), 2);
+            Imgproc.rectangle(outPut, rightRect, new Scalar(150, 80, 100), 2);
 
             return outPut;
         }
