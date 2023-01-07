@@ -23,7 +23,8 @@ public class magnetTEst extends LinearOpMode {
             // If the Magnetic Limit Switch is pressed, stop the motor
             if (limit.isPressed()) {
                 telemetry.addLine("isPressed");
-            } else { // Otherwise, run the motor
+            }
+            else { // Otherwise, run the motor
                 telemetry.addLine("notPressed");
             }
             telemetry.update();
