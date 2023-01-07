@@ -45,6 +45,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
+import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
@@ -79,15 +80,15 @@ public class AutoProgram5Cones extends OpMode {
 
     Trajectory centerTraj;
 
-    Trajectory toPoll;
-    Trajectory toCone;
+    TrajectorySequence toPoll;
+    TrajectorySequence toCone;
 
-    Trajectory toPollCenter;
-    Trajectory toConeCenter;
+    TrajectorySequence toPollCenter;
+    TrajectorySequence toConeCenter;
 
 
-    Trajectory park2;
-    Trajectory park3;
+    TrajectorySequence park2;
+    TrajectorySequence park3;
 
     Pose2d pipePose;
 
@@ -149,9 +150,8 @@ public class AutoProgram5Cones extends OpMode {
         TRAJECTORY_4,
         TRAJECTORY_5,
         TO_POLL,
-        FIRST_TO_POLL_CENTER,
-        TO_POLL_CENTER,
-        TO_CONE_CENTER,
+        CONE_TO_CENTER,
+        POLL_TO_CENTER,
         TO_CONE,
         CENTER,
         PARK,
@@ -176,9 +176,8 @@ public class AutoProgram5Cones extends OpMode {
                 drive.setDrivePower(new Pose2d(0, 0, 0));
                 drive.update();
                 conePose = drive.getPoseEstimate();
-//                conePoseAdj = new Pose2d(drive.getPoseEstimate().getX() + 0.7, drive.getPoseEstimate().getY() - 0.8, drive.getPoseEstimate().getHeading());
 
-                currentState = State.FIRST_TO_POLL_CENTER;
+                currentState = State.CONE_TO_CENTER;
             }
 
             else if (isConeHoming) {
@@ -382,7 +381,7 @@ public class AutoProgram5Cones extends OpMode {
                 .build();
 
         traj2 = drive.trajectoryBuilder(traj.end())
-                .lineToConstantHeading(new Vector2d(36, 5))
+                .lineToConstantHeading(new Vector2d(36, 0))
                 .addDisplacementMarker(() -> {
                     rightSlide.setTargetPosition(750);
                     leftSlide.setTargetPosition(750);
@@ -390,13 +389,15 @@ public class AutoProgram5Cones extends OpMode {
                 .build();
 
         traj3 = drive.trajectoryBuilder(traj2.end())
+                .addDisplacementMarker(() -> {
+                    webcam.setPipeline(new AutoProgram5Cones.pipeDetect());
+                })
                 .lineToLinearHeading(new Pose2d(36, -12, Math.toRadians(300)))
                 .build();
 
         traj3_2 = drive.trajectoryBuilder(traj3.end())
-                .lineToConstantHeading(new Vector2d(30, -10))
+                .lineToConstantHeading(new Vector2d(36, -11.8))
                 .addDisplacementMarker(() -> {
-                    webcam.setPipeline(new AutoProgram5Cones.pipeDetect());
                     isHoming = true;
                 })
                 .build();
@@ -434,10 +435,10 @@ public class AutoProgram5Cones extends OpMode {
             case TRAJECTORY_4:
                 if (System.currentTimeMillis() > waitTime) {
                     traj4 = drive.trajectoryBuilder(pipePose)
-                            .lineToLinearHeading(new Pose2d(45, -15, Math.toRadians(0)))
+                            .lineToLinearHeading(new Pose2d(45, -11, Math.toRadians(0)))
                             .addDisplacementMarker(() -> {
-                                rightSlide.setTargetPosition(230);
-                                leftSlide.setTargetPosition(230);
+                                rightSlide.setTargetPosition(200);
+                                leftSlide.setTargetPosition(200);
                                 leftArmServo.setPosition(0);
                                 rightArmServo.setPosition(1);
                                 clawServo.setPosition(0.24);
@@ -457,65 +458,42 @@ public class AutoProgram5Cones extends OpMode {
                             })
                             .build();
                     currentState = State.HOMING;
-                    drive.followTrajectoryAsync(traj5);
+                    drive.followTrajectory(traj5);
                 }
                 break;
             case TO_POLL:
                 if(!drive.isBusy()){
-                    pipePoseAdj = new Pose2d(pipePoseAdj.getX() + (0.3 * (coneCount - 1)), pipePoseAdj.getY() - (1 * (coneCount - 1)), pipePoseAdj.getHeading());
-                    toPoll = drive.trajectoryBuilder(toPollCenter.end())
-                            .lineToLinearHeading(pipePoseAdj)
+                    toPoll = drive.trajectorySequenceBuilder(toPollCenter.end())
+                            .lineToLinearHeading(pipePose)
                             .addDisplacementMarker(() -> {
                                 clawServo.setPosition(0.38);
                                 coneCount++;
                             })
                             .build();
-                    currentState = State.TO_CONE_CENTER;
-                    drive.followTrajectoryAsync(toPoll);
+                    currentState = State.POLL_TO_CENTER;
+                    drive.followTrajectorySequenceAsync(toPoll);
             }
                 break;
-            case TO_CONE_CENTER:
-                if (coneCount >= 5){
-                    currentState = State.CENTER;
-                    drive.followTrajectoryAsync(centerTraj);
-                }
 
-                else if(!drive.isBusy()){
-                    toConeCenter = drive.trajectoryBuilder(toPoll.end())
-                            .addTemporalMarker(0.5, () -> {
-                                rightSlide.setTargetPosition(200 - (47 * coneCount));
-                                leftSlide.setTargetPosition(200 - (47 * coneCount));
-                                leftArmServo.setPosition(0);
-                                rightArmServo.setPosition(1);
-                                clawServo.setPosition(0.24);
-                            })
-                            .lineToConstantHeading(new Vector2d(32, -15))
-                            .build();
-
-                    currentState = State.TO_CONE;
-                    drive.followTrajectoryAsync(toConeCenter);
-                }
-                break;
             case TO_CONE:
                 if (!drive.isBusy()) {
                     clawServo.setPosition(0.38);
-                    conePoseAdj = conePose;
                     telemetry.addData("toConeCenter", toConeCenter);
-                    toCone = drive.trajectoryBuilder(toConeCenter.end())
-                            .lineToLinearHeading(conePoseAdj)
+                    toCone = drive.trajectorySequenceBuilder(toConeCenter.end())
+                            .lineToLinearHeading(conePose)
                             .addDisplacementMarker(() -> {
                                 waitTime = System.currentTimeMillis() + 500;
                             })
                             .build();
-                    currentState = State.TO_POLL_CENTER;
-                    drive.followTrajectoryAsync(toCone);
+                    currentState = State.CONE_TO_CENTER;
+                    drive.followTrajectorySequenceAsync(toCone);
                 }
                 break;
-            case TO_POLL_CENTER:
+            case CONE_TO_CENTER:
                 if (!drive.isBusy()) {
                     clawServo.setPosition(0.24);
                     if (waitTime < System.currentTimeMillis()) {
-                        toPollCenter = drive.trajectoryBuilder(conePoseAdj)
+                        toPollCenter = drive.trajectorySequenceBuilder(conePose)
                                 .addTemporalMarker(0.4, () -> {
                                     rightSlide.setTargetPosition(750);
                                     leftSlide.setTargetPosition(750);
@@ -524,23 +502,20 @@ public class AutoProgram5Cones extends OpMode {
                                     leftArmServo.setPosition(.72);
                                     rightArmServo.setPosition(.3);
                                 })
-                                .lineToLinearHeading(new Pose2d(32, -15, Math.toRadians(300)))
+                                .lineToConstantHeading(new Vector2d(36, -12))
+                                .turn(Math.toRadians(-45), 5, 5)
                                 .build();
                         currentState = State.TO_POLL;
-                        drive.followTrajectoryAsync(toPollCenter);
+                        drive.followTrajectorySequenceAsync(toPollCenter);
                     }
                 }
                 break;
-            case FIRST_TO_POLL_CENTER:
+            case POLL_TO_CENTER:
                 if (!drive.isBusy()) {
                     clawServo.setPosition(0.24);
-                    waitTime = System.currentTimeMillis() + 500;
-                    if (waitTime > System.currentTimeMillis()) {
-                        toPollCenter = drive.trajectoryBuilder(conePose)
-                                .addTemporalMarker(0.5, () -> {
-
-                                })
-                                .addTemporalMarker(0.2, () -> {
+                    if (waitTime < System.currentTimeMillis()) {
+                        toPollCenter = drive.trajectorySequenceBuilder(pipePose)
+                                .addTemporalMarker(0.4, () -> {
                                     rightSlide.setTargetPosition(750);
                                     leftSlide.setTargetPosition(750);
                                 })
@@ -548,27 +523,13 @@ public class AutoProgram5Cones extends OpMode {
                                     leftArmServo.setPosition(.72);
                                     rightArmServo.setPosition(.3);
                                 })
-                                .lineToLinearHeading(new Pose2d(32, -12, Math.toRadians(300)))
+                                .lineToConstantHeading(new Vector2d(36, -12))
+                                .turn(Math.toRadians(45), 5, 5)
                                 .build();
                         currentState = State.TO_POLL;
-                        drive.followTrajectoryAsync(toPollCenter);
+                        drive.followTrajectorySequenceAsync(toPollCenter);
                     }
                 }
-                break;
-
-            case CENTER:
-                centerTraj = drive.trajectoryBuilder(pipePose)
-                        .lineToLinearHeading(new Pose2d(34, -13, Math.toRadians(270)))
-                        .addDisplacementMarker(() -> {
-                            rightSlide.setTargetPosition(10);
-                            leftSlide.setTargetPosition(10);
-                            leftArmServo.setPosition(.5);
-                            rightArmServo.setPosition(.5);
-                            clawServo.setPosition(0.24);
-                        })
-                        .build();
-                currentState = State.IDLE;
-                drive.followTrajectoryAsync(centerTraj);
                 break;
 
 
@@ -576,22 +537,22 @@ public class AutoProgram5Cones extends OpMode {
                 if (!drive.isBusy()) {
                     telemetry.addData("color", colorDetectString);
                     telemetry.update();
-                    park2 = drive.trajectoryBuilder(centerTraj.end())
+                    park2 = drive.trajectorySequenceBuilder(centerTraj.end())
                             .lineToConstantHeading(new Vector2d(36, -37))
                             .build();
 
-                    park3 = drive.trajectoryBuilder(centerTraj.end())
+                    park3 = drive.trajectorySequenceBuilder(centerTraj.end())
                             .lineToConstantHeading(new Vector2d(60, -37))
                             .build();
                     if (colorDetected == "M") {
                         currentState = State.IDLE;
                         break;
                     } else if (colorDetected == "G") {
-                        drive.followTrajectoryAsync(park2);
+                        drive.followTrajectorySequenceAsync(park2);
                         currentState = State.IDLE;
                         break;
                     } else if (colorDetected == "A") {
-                        drive.followTrajectoryAsync(park3);
+                        drive.followTrajectorySequenceAsync(park3);
                         currentState = State.IDLE;
                         break;
                     }
@@ -679,7 +640,6 @@ public class AutoProgram5Cones extends OpMode {
             return outPut;
         }
     }
-
 
     class colorDetect extends OpenCvPipeline {
 
