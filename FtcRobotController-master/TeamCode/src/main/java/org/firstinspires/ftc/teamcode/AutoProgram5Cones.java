@@ -233,7 +233,7 @@ public class AutoProgram5Cones extends OpMode {
         }
 
 
-        if(Math.abs(wOffset) > 100) {
+        if(Math.abs(wOffset) > aOffset) {
             motorVertical = multiplier + baseSpeedVert;
         }
         else if(Math.abs(wOffset) > 15) {
@@ -243,7 +243,7 @@ public class AutoProgram5Cones extends OpMode {
             motorVertical = 0;
         }
 
-        if(Math.abs(cOffset) > 100) {
+        if(Math.abs(cOffset) > aOffset) {
             motorHorizontal = multiplier + baseSpeedHorz;
         }
         else if(Math.abs(cOffset) > 15) {
