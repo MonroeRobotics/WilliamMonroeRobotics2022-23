@@ -95,10 +95,10 @@ public class AutoProgramSimpleRight extends OpMode {
     String colorDetectString = "";
     String colorDetected = "";
 
-    int leftLowBound = 240;
-    int leftTarget = 260;
-    int rightTarget = 390;
-    int rightHighBound = 410;
+    int leftLowBound = 220;
+    int leftTarget = 240;
+    int rightTarget = 410;
+    int rightHighBound = 430;
 
     boolean isHoming = false;
     boolean homed = false;

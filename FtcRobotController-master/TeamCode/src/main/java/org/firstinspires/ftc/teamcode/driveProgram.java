@@ -114,7 +114,7 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.5);
         leftSlide.setPower(0.5);
-        slideTarget = 10;
+        slideTarget = 40;
         //endregion
 
         telemetry.addData("Status", "Initialized");
@@ -218,7 +218,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 10;
+                    slideTarget = 40;
                 }
             }
             else if (gamepad2.dpad_down && slidePos > 0 && !dPSlide){
@@ -234,7 +234,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 10;
+                    slideTarget = 40;
                 }
             }
             else if (!gamepad2.dpad_down && !gamepad2.dpad_up){
