@@ -65,7 +65,7 @@ public class driveProgram extends LinearOpMode {
         Servo clawServo = hardwareMap.get(Servo.class, "clawServo");
 
         ColorSensor colorSensor = hardwareMap.get(ColorSensor.class, "color");
-        DistanceSensor distanceSensorClaw = hardwareMap.get(DistanceSensor.class, "distanceFront");
+        DistanceSensor distanceSensorClaw = hardwareMap.get(DistanceSensor.class, "distanceClaw");
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);

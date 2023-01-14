@@ -122,11 +122,17 @@ public class AutoProgram5Cones extends OpMode {
 
     int coneCount = 0;
 
-    double lBounding;
-    double rBounding;
+    double lBoundingPole;
+    double rBoundingPole;
 
-    int leftTarget = 275;
-    int rightTarget = 395;
+    double lBoundingCone;
+    double rBoundingCone;
+
+    int leftTargetPole = 275;
+    int rightTargetPole = 395;
+
+    int leftTargetCone = 180;
+    int rightTargetCone = 450;
 
     double baseSpeedVert = 0.01;
     double baseSpeedHorz = 0.01;
@@ -136,11 +142,6 @@ public class AutoProgram5Cones extends OpMode {
     int hAOffset = 150;
     int vAOffset = 100;
     int tOffset = 15;
-
-    int leftLowBoundCone = 200;
-    int leftTargetCone = 220;
-    int rightTargetCone = 430;
-    int rightHighBoundCone = 450;
 
     boolean isHoming = false;
     boolean isConeHoming = false;
@@ -176,7 +177,19 @@ public class AutoProgram5Cones extends OpMode {
     public void homeCone() {
         telemetry.addData("Distance", distanceSensorClaw.getDistance(DistanceUnit.MM));
         telemetry.update();
-            if (distanceSensorClaw.getDistance(DistanceUnit.MM) <= 50){
+        double coneWidth = rBoundingCone - lBoundingCone;
+        double targetWidth = rightTargetCone - leftTargetCone;
+
+        //find center of cones and target
+        double coneCenter = lBoundingCone + (coneWidth / 2);
+        double targetCenter = leftTargetCone + (targetWidth / 2);
+
+        //get center distance
+        double cOffset = targetCenter - coneCenter;
+
+        double wOffset = targetWidth - coneWidth;
+
+            if (distanceSensorClaw.getDistance(DistanceUnit.MM) <= 60 ){
                 clawServo.setPosition(0.24);
                 isConeHoming = false;
                 drive.setDrivePower(new Pose2d(0, 0, 0));
@@ -193,33 +206,65 @@ public class AutoProgram5Cones extends OpMode {
             }
 
             else if (isConeHoming) {
-                if (conexBounding > leftTargetCone && coneyBounding > rightTargetCone) {
-                    drive.setDrivePower(new Pose2d(0, -.1, 0));
+
+                //get motor powers
+
+                if (wOffset < 0){
+                    baseSpeedVert = Math.abs(baseSpeedVert) * -1;
+                }
+                else{
+                    baseSpeedVert = Math.abs(baseSpeedVert);
+                }
+                if (cOffset < 0){
+
+                    baseSpeedHorz = Math.abs(baseSpeedHorz) * -1;
+                }
+                else{
+                    baseSpeedHorz = Math.abs(baseSpeedHorz);
                 }
 
-                else if (conexBounding < leftTargetCone && coneyBounding < rightTargetCone) {
-                    drive.setDrivePower(new Pose2d(0, .1, 0));
+                if(Math.abs(wOffset) > vAOffset) {
+                    motorVertical = multiplier + baseSpeedVert;
+                }
+                else if(Math.abs(wOffset) > tOffset) {
+                    motorVertical = multiplier * (wOffset / vAOffset) + baseSpeedVert;
+                }
+                else{
+                    motorVertical = 0;
                 }
 
-                else if (distanceSensorClaw.getDistance(DistanceUnit.MM) >= 150) {
-                    drive.setDrivePower(new Pose2d(.2, 0, 0));
+                if(Math.abs(cOffset) > hAOffset) {
+                    motorHorizontal = multiplier + baseSpeedHorz;
                 }
-                else if (distanceSensorClaw.getDistance(DistanceUnit.MM) >= 50) {
-                    drive.setDrivePower(new Pose2d(.1, 0, 0));
+                else if(Math.abs(cOffset) > tOffset) {
+                    motorHorizontal = multiplier * (cOffset / hAOffset) + baseSpeedHorz;
                 }
+                else{
+                    motorHorizontal = 0;
+                }
+                drive.setDrivePower(new Pose2d(motorVertical, motorHorizontal, 0));
             }
+
+
+
+        telemetry.addData("cOff", cOffset);
+        telemetry.addData("wOff", wOffset);
+        telemetry.addData("motorHorz", motorHorizontal);
+        telemetry.addData("motorVerti", motorVertical);
+        telemetry.addData("baseHorz", baseSpeedHorz);
+        telemetry.addData("baseVert", baseSpeedVert);
 
             telemetry.update();
     }
     public void homePipe() {
 
         //find width of target and poles
-        double poleWidth = rBounding - lBounding;
-        double targetWidth = rightTarget - leftTarget;
+        double poleWidth = rBoundingPole - lBoundingPole;
+        double targetWidth = rightTargetPole - leftTargetPole;
 
         //find center of poles and target
-        double poleCenter = lBounding + (poleWidth / 2);
-        double targetCenter = leftTarget + (targetWidth / 2);
+        double poleCenter = lBoundingPole + (poleWidth / 2);
+        double targetCenter = leftTargetPole + (targetWidth / 2);
 
         //get center distance
         double cOffset = targetCenter - poleCenter;
@@ -494,7 +539,7 @@ public class AutoProgram5Cones extends OpMode {
                             .turn(Math.toRadians(-45), 5, 5)
                             .lineToLinearHeading(pipePose)
                             .addDisplacementMarker(() -> {
-                                waitTime = System.currentTimeMillis() + 2000;
+                                waitTime = System.currentTimeMillis() + 3000;
                             })
                             .build();
                     currentState = State.POLL_TO_CENTER;
@@ -509,7 +554,7 @@ public class AutoProgram5Cones extends OpMode {
                     toCone = drive.trajectorySequenceBuilder(toPollCenter.end())
                             .lineToLinearHeading(conePose)
                             .addDisplacementMarker(() -> {
-                                waitTime = System.currentTimeMillis() + 500;
+                                waitTime = System.currentTimeMillis() + 10000;
                             })
                             .build();
                     currentState = State.CONE_TO_CENTER;
@@ -626,8 +671,8 @@ public class AutoProgram5Cones extends OpMode {
 
             Core.inRange(HSV, lowHSV, highHSV, thresh);
 
-            Rect leftRect = new Rect(leftTarget, 140, 1, 79);
-            Rect rightRect = new Rect(rightTarget, 140, 1, 79);
+            Rect leftRect = new Rect(leftTargetPole, 140, 1, 79);
+            Rect rightRect = new Rect(rightTargetPole, 140, 1, 79);
 
 
             Imgproc.morphologyEx(thresh, dilate, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(5, 5)));
@@ -657,9 +702,9 @@ public class AutoProgram5Cones extends OpMode {
                         maxValIdx = contourIdx;
                     }
                 }
-                lBounding = boundRect[maxValIdx].x;
+                lBoundingPole = boundRect[maxValIdx].x;
 
-                rBounding = boundRect[maxValIdx].x + boundRect[maxValIdx].width;
+                rBoundingPole = boundRect[maxValIdx].x + boundRect[maxValIdx].width;
 
                 Imgproc.rectangle(outPut, boundRect[maxValIdx], new Scalar(150, 80, 100), 3);
             }
@@ -749,44 +794,31 @@ public class AutoProgram5Cones extends OpMode {
 
     class coneDetect extends OpenCvPipeline {
 
-        //Initializing Variables
         Mat HSV = new Mat();
         Mat outPut = new Mat();
         Mat thresh = new Mat();
         Mat dilate = new Mat();
         Mat hierarchy = new Mat();
 
-        Scalar rectColor1 = new Scalar(50, 255, 255);
-
-        //Loops and processes every frame and returns desired changed
-        public Mat processFrame(Mat input) {
-
-            //changes Mat input from RGB to HSV and saves to Mat HSV
+        public Mat processFrame(Mat input){
             Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
 
-            //Creates New rectangle objects for 3 regions, Left, Right, and Center
-            Rect leftRect = new Rect(leftTargetCone, 140, 1, 79);
-            Rect rightRect = new Rect(rightTargetCone, 140, 1, 79);
-            Rect leftBound = new Rect(leftLowBoundCone, 140, 1, 79);
-            Rect rightBound = new Rect(rightHighBoundCone, 140, 1, 79);
-
-            //Creates the upper and lower range for the accepted HSV values for color of pole
-            Scalar lowHSV = new Scalar(172,80,80);
-            Scalar highHSV = new Scalar(184,255,255);
-
-            //Returns Output Mat "thresh" that only contains pixels that are within low and high boundaries (lowHSV, highHSV)
+            Scalar lowHSV = new Scalar(162,40,40);
+            Scalar highHSV = new Scalar(190,255,255);
 
             Core.inRange(HSV, lowHSV, highHSV, thresh);
 
+            Rect leftRect = new Rect(leftTargetCone, 140, 1, 79);
+            Rect rightRect = new Rect(rightTargetCone, 140, 1, 79);
 
-            Imgproc.morphologyEx(thresh, dilate, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(3, 3)));
+
+            Imgproc.morphologyEx(thresh, dilate, MORPH_OPEN, Imgproc.getStructuringElement(MORPH_RECT, new Size(2, 2)));
 
             List<MatOfPoint> contours = new ArrayList<>();
 
             Imgproc.findContours(dilate, contours, hierarchy, Imgproc.RETR_TREE, Imgproc.CHAIN_APPROX_SIMPLE);
 
             dilate.copyTo(outPut);
-
 
             if (contours.size() != 0) {
                 MatOfPoint2f[] contoursPoly  = new MatOfPoint2f[contours.size()];
@@ -807,23 +839,16 @@ public class AutoProgram5Cones extends OpMode {
                         maxValIdx = contourIdx;
                     }
                 }
-                conexBounding = boundRect[maxValIdx].x;
+                lBoundingCone = boundRect[maxValIdx].x;
 
-                coneyBounding = boundRect[maxValIdx].x + boundRect[maxValIdx].width;
+                rBoundingCone = boundRect[maxValIdx].x + boundRect[maxValIdx].width;
 
                 Imgproc.rectangle(outPut, boundRect[maxValIdx], new Scalar(150, 80, 100), 3);
             }
 
+            Imgproc.rectangle(outPut, leftRect, new Scalar(150, 80, 100), 2);
+            Imgproc.rectangle(outPut, rightRect, new Scalar(150, 80, 100), 2);
 
-            //copies thresh Mat to outPut and draws rectangles regions on the image for user to see
-
-            Imgproc.rectangle(outPut, leftRect, rectColor1, 2);
-            Imgproc.rectangle(outPut, rightRect, rectColor1, 2);
-            Imgproc.rectangle(outPut, leftBound, rectColor1, 2);
-            Imgproc.rectangle(outPut, rightBound, rectColor1, 2);
-
-
-            //Returns to display outPut Mat
             return outPut;
         }
     }
