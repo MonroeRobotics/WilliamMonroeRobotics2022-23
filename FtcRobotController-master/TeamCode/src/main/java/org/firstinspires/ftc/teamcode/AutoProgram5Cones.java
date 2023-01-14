@@ -512,10 +512,10 @@ public class AutoProgram5Cones extends OpMode {
                             .turn(Math.toRadians(-45), 5, 5)
                             .lineToLinearHeading(pipePose)
                             .addDisplacementMarker(() -> {
-                                waitTime = System.currentTimeMillis() + 1000;
+                                waitTime = System.currentTimeMillis() + 10000;
                             })
                             .build();
-                    currentState = State.IDLE;
+                    currentState = State.POLL_TO_CENTER;
                     drive.followTrajectorySequenceAsync(toPoll);
             }
                 break;
@@ -572,7 +572,7 @@ public class AutoProgram5Cones extends OpMode {
                                 })
                                 .turn(Math.toRadians(45), 5, 5)
                                 .build();
-                        currentState = State.TO_CONE;
+                        currentState = State.IDLE;
                         drive.followTrajectorySequenceAsync(toPollCenter);
                     }
                 }
