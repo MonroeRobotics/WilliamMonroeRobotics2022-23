@@ -185,6 +185,9 @@ public class AutoProgram5Cones extends OpMode {
                 drive.setDrivePower(new Pose2d(0, 0, 0));
                 drive.update();
                 conePose = drive.getPoseEstimate();
+                if (conePose.getX() > 63 ){
+                    conePose = new Pose2d(63, conePose.getY(), conePose.getHeading());
+                }
 
                 waitTime = System.currentTimeMillis() + 200;
                 waitTime2 = waitTime + 300;
@@ -331,9 +334,6 @@ public class AutoProgram5Cones extends OpMode {
         rightSlide.setPower(0.4);
         leftSlide.setPower(0.4);
 
-
-
-
         cameraMonitorViewId = hardwareMap.appContext.getResources().getIdentifier("cameraMonitorViewId", "id", hardwareMap.appContext.getPackageName());
 
 
@@ -345,7 +345,6 @@ public class AutoProgram5Cones extends OpMode {
 
         WebcamName webcamName = hardwareMap.get(WebcamName.class, "webcam");
         webcam = OpenCvCameraFactory.getInstance().createWebcam(webcamName, viewportContainerIds[0]);
-
 
 
         //Starts streaming camera
@@ -380,26 +379,12 @@ public class AutoProgram5Cones extends OpMode {
             }
         });
 
-
-        //sets webcam Computer Vision Pipeline to examplePipeline
-
-//        webcam.setPipeline(new AutoProgram4.coneDetect());
-
         //Starts streaming camera
 
 
         drive = new SampleMecanumDrive(hardwareMap);
 
         drive.setPoseEstimate(new Pose2d(36, -63.96875, Math.toRadians(270.0)));
-
-//        traj = drive.trajectoryBuilder(new Pose2d(36, -63.96875, Math.toRadians(270.0)))
-//                .lineToConstantHeading(new Vector2d(36, -59))
-//                .addDisplacementMarker(() -> {
-//                    colorDetected = detectColor();
-//                    telemetry.addData("color", colorDetectString);
-//                    telemetry.update();
-//                })
-//                .build();
 
         traj2 = drive.trajectoryBuilder(new Pose2d(36, -63.96875, Math.toRadians(270.0)))
                 .addDisplacementMarker(() -> {
@@ -498,7 +483,7 @@ public class AutoProgram5Cones extends OpMode {
                 if(!drive.isBusy()){
                         telemetry.addData("X", distanceSensorFront.getDistance(DistanceUnit.INCH));
 
-                        double xEst = 72.0 - distanceSensorFront.getDistance(DistanceUnit.INCH)  - 8.0;
+                        double xEst = 72.0 - distanceSensorFront.getDistance(DistanceUnit.INCH) - 9.0;
                         double yEst = -24.0 + lowestY + 6.6;
                         telemetry.addData("XEst", xEst);
                         telemetry.addData("YEst",yEst);
@@ -562,8 +547,8 @@ public class AutoProgram5Cones extends OpMode {
                         toPollCenter = drive.trajectorySequenceBuilder(pipePose)
                                 .addDisplacementMarker(() -> {
                                     clawServo.setPosition(0.24);
-                                    leftArmServo.setPosition(.72);
-                                    rightArmServo.setPosition(.3);
+                                    leftArmServo.setPosition(0);
+                                    rightArmServo.setPosition(1);
                                 })
                                 .lineToConstantHeading(new Vector2d(36, -12))
                                 .addTemporalMarker(0.4, () -> {
@@ -572,7 +557,7 @@ public class AutoProgram5Cones extends OpMode {
                                 })
                                 .turn(Math.toRadians(45), 5, 5)
                                 .build();
-                        currentState = State.IDLE;
+                        currentState = State.TO_CONE;
                         drive.followTrajectorySequenceAsync(toPollCenter);
                     }
                 }
