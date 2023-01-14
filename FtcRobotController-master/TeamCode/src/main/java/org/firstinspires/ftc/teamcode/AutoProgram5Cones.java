@@ -75,8 +75,6 @@ public class AutoProgram5Cones extends OpMode {
     DistanceSensor distanceSensorR;
     DistanceSensor distanceSensorL;
 
-
-    Trajectory traj;
     Trajectory traj2;
     Trajectory traj3;
     Trajectory traj3_2;
@@ -171,9 +169,8 @@ public class AutoProgram5Cones extends OpMode {
     State currentState;
 
     public String detectColor(){
-        String detection = colorDetectString;
 
-        return detection;
+        return colorDetectString;
     }
 
     public void homeCone() {
@@ -185,8 +182,8 @@ public class AutoProgram5Cones extends OpMode {
                 drive.setDrivePower(new Pose2d(0, 0, 0));
                 drive.update();
                 conePose = drive.getPoseEstimate();
-                if (conePose.getX() > 63 ){
-                    conePose = new Pose2d(63, conePose.getY(), conePose.getHeading());
+                if (conePose.getX() > 64 ){
+                conePose = new Pose2d(64, conePose.getY(), conePose.getHeading());
                 }
 
                 waitTime = System.currentTimeMillis() + 200;
@@ -488,7 +485,7 @@ public class AutoProgram5Cones extends OpMode {
                         telemetry.addData("XEst", xEst);
                         telemetry.addData("YEst",yEst);
                         telemetry.update();
-                        posEst = new Pose2d(xEst, yEst, drive.getPoseEstimate().getHeading());
+                        posEst = new Pose2d(xEst, drive.getPoseEstimate().getY(), drive.getPoseEstimate().getHeading());
                         drive.setPoseEstimate(posEst);
                     toPoll = drive.trajectorySequenceBuilder(posEst)
                             .addDisplacementMarker( () -> {
@@ -497,7 +494,7 @@ public class AutoProgram5Cones extends OpMode {
                             .turn(Math.toRadians(-45), 5, 5)
                             .lineToLinearHeading(pipePose)
                             .addDisplacementMarker(() -> {
-                                waitTime = System.currentTimeMillis() + 10000;
+                                waitTime = System.currentTimeMillis() + 2000;
                             })
                             .build();
                     currentState = State.POLL_TO_CENTER;
@@ -528,7 +525,8 @@ public class AutoProgram5Cones extends OpMode {
 
                         if (waitTime2 < System.currentTimeMillis()) {
                             toPollCenter = drive.trajectorySequenceBuilder(conePose)
-                                    .lineToConstantHeading(new Vector2d(36, -12))
+                                    .lineToConstantHeading(new Vector2d(36, -12), SampleMecanumDrive.getVelocityConstraint(20, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
+                                            SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                                     .addDisplacementMarker(() -> {
                                         leftArmServo.setPosition(.72);
                                         rightArmServo.setPosition(.3);
@@ -575,14 +573,14 @@ public class AutoProgram5Cones extends OpMode {
                     park3 = drive.trajectorySequenceBuilder(centerTraj.end())
                             .lineToConstantHeading(new Vector2d(60, -37))
                             .build();
-                    if (colorDetected == "M") {
+                    if (colorDetected.equals("M")) {
                         currentState = State.IDLE;
                         break;
-                    } else if (colorDetected == "G") {
+                    } else if (colorDetected.equals("G")) {
                         drive.followTrajectorySequenceAsync(park2);
                         currentState = State.IDLE;
                         break;
-                    } else if (colorDetected == "A") {
+                    } else if (colorDetected.equals("A")) {
                         drive.followTrajectorySequenceAsync(park3);
                         currentState = State.IDLE;
                         break;
@@ -681,10 +679,6 @@ public class AutoProgram5Cones extends OpMode {
         Mat threshM = new Mat();
         Mat threshG = new Mat();
         Mat threshA = new Mat();
-
-        Mat dilateM = new Mat();
-        Mat dilateG = new Mat();
-        Mat dilateA = new Mat();
 
         Mat cropM = new Mat();
         Mat cropG = new Mat();
