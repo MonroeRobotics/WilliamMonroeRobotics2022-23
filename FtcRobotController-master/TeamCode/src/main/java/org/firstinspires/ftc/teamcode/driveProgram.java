@@ -37,6 +37,10 @@ public class driveProgram extends LinearOpMode {
 
         boolean isClosed = false;
 
+        boolean flipArm = false;
+
+        double waitTime = 0;
+
         boolean dPSlide = false;
         boolean dPArm = false;
         boolean bumper = false;
@@ -114,7 +118,7 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.5);
         leftSlide.setPower(0.5);
-        slideTarget = 10;
+        slideTarget = 40;
         //endregion
 
         telemetry.addData("Status", "Initialized");
@@ -218,7 +222,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 10;
+                    slideTarget = 40;
                 }
             }
             else if (gamepad2.dpad_down && slidePos > 0 && !dPSlide){
@@ -234,7 +238,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 10;
+                    slideTarget = 40;
                 }
             }
             else if (!gamepad2.dpad_down && !gamepad2.dpad_up){
@@ -292,12 +296,19 @@ public class driveProgram extends LinearOpMode {
 
             if (gamepad2.a){
                 clawServo.setPosition(.38);
-                armPos = 0;
+
                 isClosed = false;
+                flipArm = true;
+                waitTime = System.currentTimeMillis() + 50;
             }
             else if (gamepad2.b){
                 clawServo.setPosition(.24);
                 isClosed = true;
+            }
+
+            if(flipArm && System.currentTimeMillis() > waitTime){
+                armPos = 0;
+                flipArm = false;
             }
 
 
