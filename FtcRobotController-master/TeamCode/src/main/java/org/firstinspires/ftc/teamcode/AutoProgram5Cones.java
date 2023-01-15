@@ -194,10 +194,8 @@ public class AutoProgram5Cones extends OpMode {
                 isConeHoming = false;
                 drive.setDrivePower(new Pose2d(0, 0, 0));
                 drive.update();
-                conePose = drive.getPoseEstimate();
-                if (conePose.getX() > 64 ){
-                conePose = new Pose2d(64, conePose.getY(), conePose.getHeading());
-                }
+                double xEst = 72.0 - distanceSensorFront.getDistance(DistanceUnit.INCH) - 9.0;
+                conePose = new Pose2d(xEst, drive.getPoseEstimate().getY(), Math.toRadians(0));
 
                 waitTime = System.currentTimeMillis() + 200;
                 waitTime2 = waitTime + 300;
@@ -525,14 +523,15 @@ public class AutoProgram5Cones extends OpMode {
                 if(!drive.isBusy()){
                         telemetry.addData("X", distanceSensorFront.getDistance(DistanceUnit.INCH));
 
-                        double xEst = 72.0 - distanceSensorFront.getDistance(DistanceUnit.INCH) - 9.0;
+//                        double xEst = 72.0 - distanceSensorFront.getDistance(DistanceUnit.INCH) - 9.0;
+                    double xEst = drive.getPoseEstimate().getX();
                         double yEst = -24.0 + lowestY + 6.6;
                         telemetry.addData("XEst", xEst);
                         telemetry.addData("YEst",yEst);
                         telemetry.update();
                         posEst = new Pose2d(xEst, drive.getPoseEstimate().getY(), drive.getPoseEstimate().getHeading());
                         drive.setPoseEstimate(posEst);
-                    toPoll = drive.trajectorySequenceBuilder(posEst)
+                    toPoll = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                             .addDisplacementMarker( () -> {
                                 coneCount++;
                             })
@@ -554,7 +553,7 @@ public class AutoProgram5Cones extends OpMode {
                     toCone = drive.trajectorySequenceBuilder(toPollCenter.end())
                             .lineToLinearHeading(conePose)
                             .addDisplacementMarker(() -> {
-                                waitTime = System.currentTimeMillis() + 10000;
+                                waitTime = System.currentTimeMillis() + 2000;
                             })
                             .build();
                     currentState = State.CONE_TO_CENTER;
@@ -563,12 +562,19 @@ public class AutoProgram5Cones extends OpMode {
                 break;
             case CONE_TO_CENTER:
                 if (!drive.isBusy()) {
-                    clawServo.setPosition(0.24);
-                    if (waitTime < System.currentTimeMillis()) {
-                        rightSlide.setTargetPosition(800);
-                        leftSlide.setTargetPosition(800);
+                    if (distanceSensorClaw.getDistance(DistanceUnit.MM) > 50)
+                    drive.setDrivePower(new Pose2d(0.2, 0, 0));
+                    else {
+                        drive.setDrivePower(new Pose2d(0, 0, 0));
+                        clawServo.setPosition(0.24);
+                        double xEst = 72.0 - distanceSensorFront.getDistance(DistanceUnit.INCH) - 9.0;
+                        posEst = new Pose2d(xEst, drive.getPoseEstimate().getY(), drive.getPoseEstimate().getHeading());
+                        drive.setPoseEstimate(posEst);
 
-                        if (waitTime2 < System.currentTimeMillis()) {
+
+                        if (waitTime < System.currentTimeMillis()) {
+                            rightSlide.setTargetPosition(800);
+                            leftSlide.setTargetPosition(800);
                             toPollCenter = drive.trajectorySequenceBuilder(conePose)
                                     .lineToConstantHeading(new Vector2d(36, -12), SampleMecanumDrive.getVelocityConstraint(20, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH),
                                             SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
@@ -595,8 +601,8 @@ public class AutoProgram5Cones extends OpMode {
                                 })
                                 .lineToConstantHeading(new Vector2d(36, -12))
                                 .addTemporalMarker(0.4, () -> {
-                                    rightSlide.setTargetPosition(185 - (35 * coneCount));
-                                    leftSlide.setTargetPosition(185 - (35 * coneCount));
+                                    rightSlide.setTargetPosition(185 - (37 * coneCount));
+                                    leftSlide.setTargetPosition(185 - (37 * coneCount));
                                 })
                                 .turn(Math.toRadians(45), 5, 5)
                                 .build();

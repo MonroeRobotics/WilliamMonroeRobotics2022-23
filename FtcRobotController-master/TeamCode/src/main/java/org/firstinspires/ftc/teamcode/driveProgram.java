@@ -17,8 +17,8 @@ public class driveProgram extends LinearOpMode {
     public void runOpMode() {
 
         //region Variables Setup
-        double motorSpeed = 2000;
-        double rawMotorSpeed = 2000;
+        double motorSpeed = 1500;
+        double rawMotorSpeed = 1500;
         boolean dPMotor = false;
         double leftstickX;
         double leftstickY;
@@ -114,7 +114,7 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.5);
         leftSlide.setPower(0.5);
-        slideTarget = 40;
+        slideTarget = 10;
         //endregion
 
         telemetry.addData("Status", "Initialized");
@@ -142,12 +142,12 @@ public class driveProgram extends LinearOpMode {
             turn = this.gamepad1.right_stick_x;
 
             //region Motor Speed adjustment
-            if (this.gamepad1.right_trigger > 10 && rawMotorSpeed < 10000) {
+            if (this.gamepad1.right_trigger > 0.1 && rawMotorSpeed < 10000) {
                 if (!dPMotor) {
                     rawMotorSpeed = rawMotorSpeed + 500;
                     dPMotor = true;
                 }
-            } else if (this.gamepad1.left_trigger > 10 && rawMotorSpeed > 1000) {
+            } else if (this.gamepad1.left_trigger > 0.1 && rawMotorSpeed > 1000) {
                 if (!dPMotor) {
                     rawMotorSpeed = rawMotorSpeed - 500;
                     dPMotor = true;
@@ -177,19 +177,19 @@ public class driveProgram extends LinearOpMode {
 
             //region precision movement
             if(gamepad1.dpad_up){
-                magnitude = .1;
+                magnitude = 1.5;
                 direction = Math.toRadians(90.0);
             }
             else if(gamepad1.dpad_down){
-                magnitude = .1;
+                magnitude = 1.5;
                 direction = Math.toRadians(270);
             }
             else if(gamepad1.dpad_left){
-                magnitude = .1;
+                magnitude = 1.5;
                 direction = Math.toRadians(180);
             }
             else if(gamepad1.dpad_right){
-                magnitude = .1;
+                magnitude = 1.5;
                 direction = Math.toRadians(0);
             }
 
@@ -218,7 +218,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 40;
+                    slideTarget = 10;
                 }
             }
             else if (gamepad2.dpad_down && slidePos > 0 && !dPSlide){
@@ -234,7 +234,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 40;
+                    slideTarget = 10;
                 }
             }
             else if (!gamepad2.dpad_down && !gamepad2.dpad_up){
