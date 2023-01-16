@@ -36,6 +36,7 @@ public class driveProgram extends LinearOpMode {
         boolean homing = false;
 
         boolean isClosed = false;
+        boolean buttonPress = false;
 
         boolean flipArm = false;
 
@@ -46,6 +47,7 @@ public class driveProgram extends LinearOpMode {
         boolean bumper = false;
         int slidePos = 0;
         int slideTarget = 0;
+        double slideTimer = 0;
 
         int red;
         int blue;
@@ -118,7 +120,7 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.5);
         leftSlide.setPower(0.5);
-        slideTarget = 40;
+        slideTarget = 25;
         //endregion
 
         telemetry.addData("Status", "Initialized");
@@ -209,7 +211,7 @@ public class driveProgram extends LinearOpMode {
             int rightSlidePos = rightSlide.getCurrentPosition();
             int leftSlidePos = leftSlide.getCurrentPosition();
 
-            if (gamepad2.dpad_up && slidePos < 3 && !dPSlide){
+            if (gamepad2.dpad_up && slidePos < 3 && !dPSlide && slideTimer < System.currentTimeMillis()){
                 slidePos++;
                 dPSlide = true;
                 if (slidePos == 3) {
@@ -222,10 +224,10 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 40;
+                    slideTarget = 25;
                 }
             }
-            else if (gamepad2.dpad_down && slidePos > 0 && !dPSlide){
+            else if (gamepad2.dpad_down && slidePos > 0 && !dPSlide && slideTimer < System.currentTimeMillis()){
                 slidePos--;
                 dPSlide = true;
                 if (slidePos == 3) {
@@ -238,7 +240,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 40;
+                    slideTarget = 25;
                 }
             }
             else if (!gamepad2.dpad_down && !gamepad2.dpad_up){
@@ -281,29 +283,40 @@ public class driveProgram extends LinearOpMode {
 
             //region Claw Servo Movement
 
-            if ((blue > 200 && distance < 50) && !isClosed) {
+            if ((blue > 200 && distance < 55) && !isClosed && waitTime < System.currentTimeMillis()) {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);
                 isClosed = true;
                 clawServo.setPosition(.24);
+                slideTimer = System.currentTimeMillis() + 200;
             }
-            if ((red > 200 && distance < 50) && !isClosed) {
+            if ((red > 200 && distance < 55) && !isClosed && waitTime < System.currentTimeMillis()) {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);
                 isClosed = true;
                 clawServo.setPosition(.24);
+                slideTimer = System.currentTimeMillis() + 200;
             }
 
             if (gamepad2.a){
-                clawServo.setPosition(.38);
-
-                isClosed = false;
-                flipArm = true;
-                waitTime = System.currentTimeMillis() + 50;
+                if(!buttonPress) {
+                    clawServo.setPosition(.38);
+                    buttonPress = true;
+                    isClosed = false;
+                    flipArm = true;
+                    waitTime = System.currentTimeMillis() + 100;
+                }
             }
             else if (gamepad2.b){
-                clawServo.setPosition(.24);
-                isClosed = true;
+                if(!buttonPress) {
+                    clawServo.setPosition(.24);
+                    isClosed = true;
+                    buttonPress = true;
+                    slideTimer = System.currentTimeMillis() + 200;
+                }
+            }
+            else{
+                buttonPress = false;
             }
 
             if(flipArm && System.currentTimeMillis() > waitTime){
