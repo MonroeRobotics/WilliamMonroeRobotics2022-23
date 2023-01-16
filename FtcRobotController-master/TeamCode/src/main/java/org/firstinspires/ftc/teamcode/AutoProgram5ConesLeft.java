@@ -476,6 +476,8 @@ public class AutoProgram5ConesLeft extends OpMode {
                             leftSlide.setTargetPosition(30);
                         })
                         .build();
+                isConeHoming = false;
+                isHoming = false;
                 currentState = State.PARK;
                 drive.followTrajectorySequenceAsync(toPollCenter);
         }
