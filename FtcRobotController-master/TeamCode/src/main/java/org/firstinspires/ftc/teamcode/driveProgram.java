@@ -264,10 +264,8 @@ public class driveProgram extends LinearOpMode {
             }
 
             if(homing){
-
-                slideTarget -= 2;
-
                 if(limit.isPressed()){
+                    homing = false;
                     leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
                     rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -275,8 +273,9 @@ public class driveProgram extends LinearOpMode {
                     leftSlide.setTargetPosition(10);
                     rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
                     leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-                    homing = false;
+                }
+                else{
+                    slideTarget -= 2;
                 }
             }
             //endregion
