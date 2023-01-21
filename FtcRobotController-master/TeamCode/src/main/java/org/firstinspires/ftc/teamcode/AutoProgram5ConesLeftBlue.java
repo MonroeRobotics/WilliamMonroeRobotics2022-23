@@ -64,9 +64,9 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name = "Auto Program 1 + 5 Epic Left Auto", group = "Main")
+@Autonomous(name = "Auto Program 1 + 5 Epic Left Auto Blue", group = "Main")
 
-public class AutoProgram5ConesLeft extends OpMode {
+public class AutoProgram5ConesLeftBlue extends OpMode {
 
     SampleMecanumDrive drive;
 
