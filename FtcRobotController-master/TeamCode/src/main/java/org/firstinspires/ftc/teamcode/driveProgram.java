@@ -52,8 +52,6 @@ public class driveProgram extends LinearOpMode {
         int red;
         int blue;
 
-        double distance;
-
 
         //endregion
 
@@ -71,7 +69,6 @@ public class driveProgram extends LinearOpMode {
         Servo clawServo = hardwareMap.get(Servo.class, "clawServo");
 
         ColorSensor colorSensor = hardwareMap.get(ColorSensor.class, "color");
-        DistanceSensor distanceSensorClaw = hardwareMap.get(DistanceSensor.class, "distanceClaw");
 
         frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -136,8 +133,6 @@ public class driveProgram extends LinearOpMode {
         backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
         while (opModeIsActive()) {
-
-            distance = distanceSensorClaw.getDistance(DistanceUnit.MM);
 
             red = colorSensor.red();
             blue = colorSensor.blue();
@@ -282,14 +277,14 @@ public class driveProgram extends LinearOpMode {
 
             //region Claw Servo Movement
 
-            if ((blue > 200 && distance < 55) && !isClosed && waitTime < System.currentTimeMillis()) {
+            if (blue > 200 && !isClosed && waitTime < System.currentTimeMillis()) {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);
                 isClosed = true;
                 clawServo.setPosition(.38);
                 slideTimer = System.currentTimeMillis() + 200;
             }
-            if ((red > 200 && distance < 55) && !isClosed && waitTime < System.currentTimeMillis()) {
+            if (red > 200 && !isClosed && waitTime < System.currentTimeMillis()) {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);
                 isClosed = true;
@@ -402,8 +397,6 @@ public class driveProgram extends LinearOpMode {
 
             telemetry.addData("right slide", rightSlidePos);
             telemetry.addData("left slide", leftSlidePos);
-
-            telemetry.addData("Distance", distance);
 
             telemetry.addData("armPos", armPos);
 
