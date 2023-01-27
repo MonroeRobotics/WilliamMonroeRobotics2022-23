@@ -91,7 +91,7 @@ public class driveProgram extends LinearOpMode {
         //endregion
 
         //region Slide Init
-        clawServo.setPosition(0.24);
+        clawServo.setPosition(0.38);
 
         leftArmServo.setPosition(0);
         rightArmServo.setPosition(1);
@@ -128,7 +128,7 @@ public class driveProgram extends LinearOpMode {
 
         waitForStart();
 
-        clawServo.setPosition(0.38);
+        clawServo.setPosition(0.24);
 
         frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
@@ -286,20 +286,20 @@ public class driveProgram extends LinearOpMode {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);
                 isClosed = true;
-                clawServo.setPosition(.24);
+                clawServo.setPosition(.38);
                 slideTimer = System.currentTimeMillis() + 200;
             }
             if ((red > 200 && distance < 55) && !isClosed && waitTime < System.currentTimeMillis()) {
                 gamepad1.rumble(250);
                 gamepad2.rumble(250);
                 isClosed = true;
-                clawServo.setPosition(.24);
+                clawServo.setPosition(.38);
                 slideTimer = System.currentTimeMillis() + 200;
             }
 
             if (gamepad2.a){
                 if(!buttonPress) {
-                    clawServo.setPosition(.38);
+                    clawServo.setPosition(.24);
                     buttonPress = true;
                     isClosed = false;
                     flipArm = true;
@@ -308,7 +308,7 @@ public class driveProgram extends LinearOpMode {
             }
             else if (gamepad2.b){
                 if(!buttonPress) {
-                    clawServo.setPosition(.24);
+                    clawServo.setPosition(.38);
                     isClosed = true;
                     buttonPress = true;
                     slideTimer = System.currentTimeMillis() + 200;
@@ -328,14 +328,14 @@ public class driveProgram extends LinearOpMode {
                if(!dPArm) {
                    armPos++;
                    dPArm = true;
-                   clawServo.setPosition(.20);
+                   clawServo.setPosition(.38);
                }
             }
             if(gamepad2.dpad_left && armPos > 0){
                 if(!dPArm) {
                     armPos--;
                     dPArm = true;
-                    clawServo.setPosition(.20);
+                    clawServo.setPosition(.38);
                 }
             }
             else if (!gamepad2.dpad_left && !gamepad2.dpad_right){
