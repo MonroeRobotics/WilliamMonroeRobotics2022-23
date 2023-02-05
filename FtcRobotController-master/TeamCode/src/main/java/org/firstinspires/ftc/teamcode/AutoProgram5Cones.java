@@ -40,11 +40,9 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
-import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.drive.DriveConstants;
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 import org.firstinspires.ftc.teamcode.trajectorysequence.TrajectorySequence;
@@ -117,11 +115,11 @@ public class AutoProgram5Cones extends OpMode {
     String colorDetectString = "";
     String colorDetected = "";
 
-    double lowestY = 150;
     Pose2d posEst;
 
     int coneCount = 0;
 
+    //region Junc Detection Variables
     double lBoundingPole;
     double rBoundingPole;
 
@@ -133,6 +131,7 @@ public class AutoProgram5Cones extends OpMode {
 
     int leftTargetCone = 180;
     int rightTargetCone = 450;
+    //endregion
 
     double baseSpeedVert = 0.01;
     double baseSpeedHorz = 0.01;
@@ -422,7 +421,7 @@ public class AutoProgram5Cones extends OpMode {
                     rightSlide.setTargetPosition(750);
                     leftSlide.setTargetPosition(750);
                 })
-                .setVelConstraint(drive.getVelocityConstraint(1000, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
+                .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(1000, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
                 .lineToSplineHeading(new Pose2d(35.90, -9.93, Math.toRadians(300.00)))
                 .addDisplacementMarker(() -> isHoming = true)
                 .build();

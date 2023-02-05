@@ -1,20 +1,19 @@
 package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.roadrunner.geometry.Pose2d;
-
+import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
-@TeleOp(name = "Drive Program", group = "Main")
-public class driveProgram extends LinearOpMode {
+@TeleOp(name = "Drive Program Field Centric", group = "Main")
+public class driveProgramFieldCentric extends LinearOpMode {
 
     public void runOpMode() {
 
@@ -22,8 +21,9 @@ public class driveProgram extends LinearOpMode {
         double motorSpeed = 0.8;
         double rawMotorSpeed = 0.8;
         boolean dPMotor = false;
-        double leftStickX;
-        double leftStickY;
+        double leftstickX;
+        double leftstickY;
+
 
         double turn;
 
@@ -47,6 +47,8 @@ public class driveProgram extends LinearOpMode {
 
         int red;
         int blue;
+
+
         //endregion
 
         //region Hardware Map
@@ -117,8 +119,8 @@ public class driveProgram extends LinearOpMode {
             red = colorSensor.red();
             blue = colorSensor.blue();
 
-            leftStickX = -this.gamepad1.left_stick_x;
-            leftStickY = -this.gamepad1.left_stick_y;
+            leftstickX = -this.gamepad1.left_stick_x;
+            leftstickY = -this.gamepad1.left_stick_y;
 
             turn = this.gamepad1.right_stick_x;
 
@@ -301,11 +303,23 @@ public class driveProgram extends LinearOpMode {
             //endregion
 
             //region Setting Motors
+            // Read pose
+            Pose2d poseEstimate = drive.getPoseEstimate();
+
+// Create a vector from the gamepad x/y inputs
+// Then, rotate that vector by the inverse of that heading
+            Vector2d input = new Vector2d(
+                    -gamepad1.left_stick_y,
+                    -gamepad1.left_stick_x
+            ).rotated(-poseEstimate.getHeading());
+
+// Pass in the rotated input + right stick value for rotation
+// Rotation is not part of the rotated input thus must be passed in separately
             drive.setWeightedDrivePower(
                     new Pose2d(
-                            leftStickY * motorSpeed,
-                            -leftStickX * motorSpeed,
-                            -turn
+                            input.getX(),
+                            input.getY(),
+                            -gamepad1.right_stick_x
                     )
             );
 
