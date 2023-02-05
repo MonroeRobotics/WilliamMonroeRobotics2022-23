@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -10,6 +11,7 @@ import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.drive.SampleMecanumDrive;
 
 @TeleOp(name = "Drive Program", group = "Main")
 public class driveProgram extends LinearOpMode {
@@ -17,18 +19,13 @@ public class driveProgram extends LinearOpMode {
     public void runOpMode() {
 
         //region Variables Setup
-        double motorSpeed = 1500;
-        double rawMotorSpeed = 1500;
+        double motorSpeed = 0.8;
+        double rawMotorSpeed = 0.8;
         boolean dPMotor = false;
         double leftstickX;
         double leftstickY;
 
-        double direction;
-        double magnitude;
-        double fRight;
-        double bRight;
-        double bLeft;
-        double fLeft;
+
         double turn;
 
         int armPos = 0;
@@ -57,10 +54,6 @@ public class driveProgram extends LinearOpMode {
 
         //region Hardware Map
         TouchSensor limit = hardwareMap.get(TouchSensor.class, "limit");
-        DcMotorEx backLeft = hardwareMap.get(DcMotorEx.class, "backLeft");
-        DcMotorEx backRight = hardwareMap.get(DcMotorEx.class, "backRight");
-        DcMotorEx frontRight = hardwareMap.get(DcMotorEx.class, "frontRight");
-        DcMotorEx frontLeft = hardwareMap.get(DcMotorEx.class, "frontLeft");
 
         DcMotorEx leftSlide = hardwareMap.get(DcMotorEx.class, "leftSlide");
         DcMotorEx rightSlide = hardwareMap.get(DcMotorEx.class, "rightSlide");
@@ -70,18 +63,12 @@ public class driveProgram extends LinearOpMode {
 
         ColorSensor colorSensor = hardwareMap.get(ColorSensor.class, "color");
 
-        frontLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        frontRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backLeft.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
-        backRight.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        SampleMecanumDrive drive = new SampleMecanumDrive(hardwareMap);
+
+        drive.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         leftSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
         rightSlide.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
-
-        frontLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        backRight.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         leftSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -127,30 +114,26 @@ public class driveProgram extends LinearOpMode {
 
         clawServo.setPosition(0.24);
 
-        frontLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        frontRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backLeft.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        backRight.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
         while (opModeIsActive()) {
+
 
             red = colorSensor.red();
             blue = colorSensor.blue();
 
-            leftstickX = this.gamepad1.left_stick_x;
+            leftstickX = -this.gamepad1.left_stick_x;
             leftstickY = -this.gamepad1.left_stick_y;
 
             turn = this.gamepad1.right_stick_x;
 
             //region Motor Speed adjustment
-            if (this.gamepad1.right_trigger > 0.1 && rawMotorSpeed < 10000) {
+            if (this.gamepad1.right_trigger > 0.1 && rawMotorSpeed < 1) {
                 if (!dPMotor) {
-                    rawMotorSpeed = rawMotorSpeed + 500;
+                    rawMotorSpeed = rawMotorSpeed + 0.1;
                     dPMotor = true;
                 }
-            } else if (this.gamepad1.left_trigger > 0.1 && rawMotorSpeed > 1000) {
+            } else if (this.gamepad1.left_trigger > 0.1 && rawMotorSpeed > 0.1) {
                 if (!dPMotor) {
-                    rawMotorSpeed = rawMotorSpeed - 500;
+                    rawMotorSpeed = rawMotorSpeed - 0.1;
                     dPMotor = true;
                 }
             } else {
@@ -169,37 +152,6 @@ public class driveProgram extends LinearOpMode {
                 motorSpeed = rawMotorSpeed;
                 bumper = false;
             }
-            //endregion
-
-            //region Math For Wheel Movement
-            direction = Math.atan2(leftstickY, leftstickX);
-            magnitude = Math.sqrt(Math.pow(leftstickX, 2) + Math.pow(leftstickY, 2)) * 1.5;
-
-
-            //region precision movement
-            if(gamepad1.dpad_up){
-                magnitude = 1.5;
-                direction = Math.toRadians(90.0);
-            }
-            else if(gamepad1.dpad_down){
-                magnitude = 1.5;
-                direction = Math.toRadians(270);
-            }
-            else if(gamepad1.dpad_left){
-                magnitude = 1.5;
-                direction = Math.toRadians(180);
-            }
-            else if(gamepad1.dpad_right){
-                magnitude = 1.5;
-                direction = Math.toRadians(0);
-            }
-
-                //endregion
-
-            fRight = -(motorSpeed * (-Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            bLeft = (motorSpeed * (Math.sin(direction - 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            bRight = (motorSpeed * (-Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
-            fLeft = -(motorSpeed * (Math.sin(direction + 1.0 / 4.0 * Math.PI) * magnitude + turn));
             //endregion
 
             //region Linear Slide Movement
@@ -352,36 +304,15 @@ public class driveProgram extends LinearOpMode {
             //endregion
 
             //region Setting Motors
-            if (bLeft > 0){
-                backLeft.setDirection(DcMotor.Direction.FORWARD);
-            }
-            else {
-                backLeft.setDirection(DcMotor.Direction.REVERSE);
-            }
-            if (bRight > 0){
-                backRight.setDirection(DcMotor.Direction.FORWARD);
-            }
-            else {
-                backRight.setDirection(DcMotor.Direction.REVERSE);
-            }
-            if (fRight > 0){
-                frontRight.setDirection(DcMotor.Direction.FORWARD);
-            }
-            else {
-                frontRight.setDirection(DcMotor.Direction.REVERSE);
-            }
-            if (fLeft > 0){
-                frontLeft.setDirection(DcMotor.Direction.FORWARD);
-            }
-            else {
-                frontLeft.setDirection(DcMotor.Direction.REVERSE);
-            }
+            drive.setWeightedDrivePower(
+                    new Pose2d(
+                            -leftstickY * motorSpeed,
+                            -leftstickX * motorSpeed,
+                            -turn
+                    )
+            );
 
-
-            backLeft.setVelocity(Math.abs(bLeft));
-            frontRight.setVelocity(Math.abs(fRight));
-            backRight.setVelocity(Math.abs(bRight));
-            frontLeft.setVelocity(Math.abs(fLeft));
+            drive.update();
 
             leftSlide.setTargetPosition(slideTarget);
             rightSlide.setTargetPosition(slideTarget);
@@ -390,10 +321,6 @@ public class driveProgram extends LinearOpMode {
             //region Telemetry Data
             telemetry.addData("Status", "Running");
             telemetry.addData("motorSpeed", motorSpeed);
-            telemetry.addData("direction", direction);
-            telemetry.addData("mag", magnitude);
-
-            telemetry.addData("motor Ticks", frontLeft.getCurrentPosition());
 
             telemetry.addData("right slide", rightSlidePos);
             telemetry.addData("left slide", leftSlidePos);
