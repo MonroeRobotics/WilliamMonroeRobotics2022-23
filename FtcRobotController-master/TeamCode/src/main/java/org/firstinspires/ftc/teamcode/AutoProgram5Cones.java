@@ -545,8 +545,7 @@ public class AutoProgram5Cones extends OpMode {
                         drive.setDrivePower(new Pose2d(0, 0, 0));
                         clawServo.setPosition(0.24);
                         drive.setPoseEstimate(posEst);
-
-
+                        
                         if (waitTime < System.currentTimeMillis()) {
                             coneGrabbed = false;
                             rightSlide.setTargetPosition(800);
