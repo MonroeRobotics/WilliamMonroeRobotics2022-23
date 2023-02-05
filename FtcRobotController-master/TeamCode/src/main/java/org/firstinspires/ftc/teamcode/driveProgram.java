@@ -305,7 +305,7 @@ public class driveProgram extends LinearOpMode {
                     new Pose2d(
                             leftStickY * motorSpeed,
                             -leftStickX * motorSpeed,
-                            -turn
+                            -turn * motorSpeed
                     )
             );
 
