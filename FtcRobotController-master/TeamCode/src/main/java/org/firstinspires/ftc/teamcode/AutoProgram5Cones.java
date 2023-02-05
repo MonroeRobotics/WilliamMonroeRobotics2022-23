@@ -37,6 +37,7 @@ import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.acmerobotics.roadrunner.trajectory.Trajectory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -68,18 +69,16 @@ import java.util.List;
 
 public class AutoProgram5Cones extends OpMode {
 
+    //region Variable Declaration
     SampleMecanumDrive drive;
 
-    DistanceSensor distanceSensorClaw;
-    DistanceSensor distanceSensorFront;
-    DistanceSensor distanceSensorR;
-    DistanceSensor distanceSensorL;
+    ColorSensor colorSensor = hardwareMap.get(ColorSensor.class, "color");
+    int red;
 
-    TrajectorySequence traj2;
-    Trajectory traj3;
-    Trajectory traj3_2;
-    Trajectory traj4;
-    Trajectory traj5;
+    TrajectorySequence firstToJunc;
+    TrajectorySequence firstToCone;
+    Trajectory startConeHoming;
+
 
     TrajectorySequence toPoll;
     TrajectorySequence toCone;
@@ -151,12 +150,9 @@ public class AutoProgram5Cones extends OpMode {
 
 
     enum State {
-        TRAJECTORY_1,
-        TRAJECTORY_2,
-        TRAJECTORY_3,
-        TRAJECTORY_3_2,
-        TRAJECTORY_4,
-        TRAJECTORY_5,
+        FIRST_TO_JUNC,
+        FIRST_TO_CONE,
+        START_CONE_HOME,
         TO_POLL,
         CONE_TO_CENTER,
         POLL_TO_CENTER,
@@ -169,13 +165,10 @@ public class AutoProgram5Cones extends OpMode {
 
     State currentState;
 
-    public String detectColor(){
+    //endregion
 
-        return colorDetectString;
-    }
 
     public void homeCone() {
-        telemetry.addData("Distance", distanceSensorClaw.getDistance(DistanceUnit.MM));
         telemetry.update();
         double coneWidth = rBoundingCone - lBoundingCone;
         double targetWidth = rightTargetCone - leftTargetCone;
@@ -189,13 +182,12 @@ public class AutoProgram5Cones extends OpMode {
 
         double wOffset = targetWidth - coneWidth;
 
-            if (distanceSensorClaw.getDistance(DistanceUnit.MM) <= 60 ){
+            if (red >= 200 ){
                 clawServo.setPosition(0.24);
                 isConeHoming = false;
                 drive.setDrivePower(new Pose2d(0, 0, 0));
                 drive.update();
-                double xEst = 72.0 - distanceSensorFront.getDistance(DistanceUnit.INCH) - 9.0;
-                conePose = new Pose2d(xEst, drive.getPoseEstimate().getY(), Math.toRadians(0));
+                conePose = new Pose2d(drive.getPoseEstimate().getX(), drive.getPoseEstimate().getY(), Math.toRadians(0));
 
                 waitTime = System.currentTimeMillis() + 200;
                 waitTime2 = waitTime + 300;
@@ -254,7 +246,7 @@ public class AutoProgram5Cones extends OpMode {
 
             telemetry.update();
     }
-    public void homePipe() {
+    public void homeJunc() {
 
         //find width of target and poles
         double poleWidth = rBoundingPole - lBoundingPole;
@@ -320,7 +312,7 @@ public class AutoProgram5Cones extends OpMode {
             homed = true;
             currentTime = System.currentTimeMillis();
             waitTime = System.currentTimeMillis() + 500.0;
-            currentState = State.TRAJECTORY_4;
+            currentState = State.FIRST_TO_CONE;
             return;
         }
 
@@ -347,10 +339,7 @@ public class AutoProgram5Cones extends OpMode {
         rightArmServo = hardwareMap.get(Servo.class, "rightArmServo");
         clawServo = hardwareMap.get(Servo.class, "clawServo");
 
-        distanceSensorClaw = hardwareMap.get(DistanceSensor.class, "distanceClaw");
-        distanceSensorFront = hardwareMap.get(DistanceSensor.class, "distanceFront");
-        distanceSensorR = hardwareMap.get(DistanceSensor.class, "distanceR");
-        distanceSensorL = hardwareMap.get(DistanceSensor.class, "distanceL");
+        colorSensor = hardwareMap.get(ColorSensor.class, "color");
 
         clawServo.setPosition(0.24);
 
@@ -422,39 +411,34 @@ public class AutoProgram5Cones extends OpMode {
 
         drive.setPoseEstimate(new Pose2d(36, -63.96875, Math.toRadians(270.0)));
 
-        traj2 = drive.trajectorySequenceBuilder(new Pose2d(36, -63.96875, Math.toRadians(270.0)))
+        firstToJunc = drive.trajectorySequenceBuilder(new Pose2d(36, -63.96875, Math.toRadians(270.0)))
                 .addDisplacementMarker(() -> {
-                    colorDetected = detectColor();
+                    colorDetected = colorDetectString;
                     telemetry.addData("color", colorDetectString);
                     telemetry.update();
                 })
-                .setVelConstraint(drive.getVelocityConstraint(1000, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
-                .lineToConstantHeading(new Vector2d(36, -5))
-                .build();
-
-        traj3 = drive.trajectoryBuilder(traj2.end())
                 .addDisplacementMarker(() -> {
                     webcam.setPipeline(new pipeDetect());
                     rightSlide.setTargetPosition(750);
                     leftSlide.setTargetPosition(750);
                 })
-                .lineToLinearHeading(new Pose2d(36, -12, Math.toRadians(300)))
-                .build();
-
-        traj3_2 = drive.trajectoryBuilder(traj3.end())
-                .lineToConstantHeading(new Vector2d(36, -11.8))
+                .setVelConstraint(drive.getVelocityConstraint(1000, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
+                .lineToSplineHeading(new Pose2d(35.90, -9.93, Math.toRadians(300.00)))
                 .addDisplacementMarker(() -> isHoming = true)
                 .build();
-        currentState = State.TRAJECTORY_2;
 
-        drive.followTrajectorySequenceAsync(traj2);
+
+        currentState = State.FIRST_TO_CONE;
+
+        drive.followTrajectorySequenceAsync(firstToJunc);
 
             telemetry.addData("Status", "Initialized");
-            telemetry.addData("DistanceR", distanceSensorR.getDistance(DistanceUnit.INCH));
             telemetry.update();
     }
 
     public void loop(){
+
+        red = colorSensor.red();
 
         if(!parkSetup){
             parkTimer = System.currentTimeMillis() + 27000;
@@ -482,30 +466,10 @@ public class AutoProgram5Cones extends OpMode {
 
         label:
         switch (currentState) {
-            case TRAJECTORY_1:
-                if (!drive.isBusy()) {
-                    currentState = State.TRAJECTORY_2;
-                    drive.followTrajectorySequenceAsync(traj2);
-                }
-                break;
-            case TRAJECTORY_2:
-                if (!drive.isBusy()) {
-                    currentState = State.TRAJECTORY_3;
-                    drive.followTrajectoryAsync(traj3);
-                }
-                break;
-            case TRAJECTORY_3:
-                if (!drive.isBusy()){
-                    drive.followTrajectoryAsync(traj3_2);
-                    currentState = State.TRAJECTORY_3_2;
-                }
-                break;
-            case TRAJECTORY_3_2:
-                break;
-            case TRAJECTORY_4:
+            case FIRST_TO_CONE:
                 if (System.currentTimeMillis() > waitTime) {
-                    traj4 = drive.trajectoryBuilder(pipePose)
-                            .lineToLinearHeading(new Pose2d(36, -12, Math.toRadians(0)))
+                    firstToCone = drive.trajectorySequenceBuilder(pipePose)
+                            .lineToSplineHeading(new Pose2d(44.64, -12.29, Math.toRadians(0.00)))
                             .addDisplacementMarker(() -> {
                                 rightSlide.setTargetPosition(185);
                                 leftSlide.setTargetPosition(185);
@@ -514,30 +478,24 @@ public class AutoProgram5Cones extends OpMode {
                                 clawServo.setPosition(0.24);
                             })
                             .build();
-                    currentState = State.TRAJECTORY_5;
-                    drive.followTrajectoryAsync(traj4);
+                    currentState = State.START_CONE_HOME;
+                    drive.followTrajectorySequenceAsync(firstToCone);
                 }
                 break;
-            case TRAJECTORY_5:
+            case START_CONE_HOME:
                 if(!drive.isBusy()) {
-                    traj5 = drive.trajectoryBuilder(traj4.end())
-                            .lineToConstantHeading(new Vector2d(50, -12))
+                    startConeHoming = drive.trajectoryBuilder(firstToCone.end())
                             .addDisplacementMarker(() -> {
                                 clawServo.setPosition(0.38);
                                 isConeHoming = true;
                             })
                             .build();
                     currentState = State.HOMING;
-                    drive.followTrajectory(traj5);
+                    drive.followTrajectory(startConeHoming);
                 }
                 break;
             case TO_POLL:
-                if(distanceSensorR.getDistance(DistanceUnit.INCH) < lowestY){
-                    lowestY = distanceSensorR.getDistance(DistanceUnit.INCH);
-                    telemetry.addData("Y", lowestY);
-                    telemetry.update();
-                }
-                if(!drive.isBusy() && distanceSensorClaw.getDistance(DistanceUnit.MM) > 60){
+                if(!drive.isBusy() && red < 200){
                     toCone = drive.trajectorySequenceBuilder(toPollCenter.end())
                             .addDisplacementMarker(() -> {
                                 clawServo.setPosition(0.38);
@@ -554,7 +512,6 @@ public class AutoProgram5Cones extends OpMode {
                 }
 
                 else if(!drive.isBusy()){
-                        telemetry.addData("X", distanceSensorFront.getDistance(DistanceUnit.INCH));
                     toPoll = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                             .addDisplacementMarker( () -> coneCount++)
                             .turn(Math.toRadians(-45), 5, 5)
@@ -581,14 +538,12 @@ public class AutoProgram5Cones extends OpMode {
 
             case CONE_TO_CENTER:
                 if (!drive.isBusy()) {
-                    if (distanceSensorClaw.getDistance(DistanceUnit.MM) > 50 && !coneGrabbed)
+                    if (red < 200 && !coneGrabbed)
                     drive.setDrivePower(new Pose2d(0.2, 0, 0));
                     else {
                         coneGrabbed = true;
                         drive.setDrivePower(new Pose2d(0, 0, 0));
                         clawServo.setPosition(0.24);
-                        double xEst = 72.0 - distanceSensorFront.getDistance(DistanceUnit.INCH) - 7.5;
-                        posEst = new Pose2d(xEst, drive.getPoseEstimate().getY(), drive.getPoseEstimate().getHeading());
                         drive.setPoseEstimate(posEst);
 
 
@@ -673,9 +628,6 @@ public class AutoProgram5Cones extends OpMode {
                 if (!drive.isBusy()){
                     stop();
                 }
-                // Do nothing in IDLE
-                // currentState does not change once in IDLE
-                // This concludes the autonomous program
                 break;
         }
         if(!isHoming) {
@@ -683,7 +635,7 @@ public class AutoProgram5Cones extends OpMode {
         }
 
         if(isHoming) {
-            homePipe(); // Calls method - Locate and position to pipe
+            homeJunc(); // Calls method - Locate and position to pipe
         }
 
         if(isConeHoming){
