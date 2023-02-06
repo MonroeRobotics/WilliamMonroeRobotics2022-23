@@ -85,7 +85,7 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //slide init homing
-        while(!limit.isPressed() && (!gamepad2.start && !gamepad1.start) ){
+        while(slideTarget < 100 && !limit.isPressed() && (!gamepad2.start && !gamepad1.start) ){
             slideTarget ++;
             rightSlide.setTargetPosition(slideTarget);
             leftSlide.setTargetPosition(slideTarget);
