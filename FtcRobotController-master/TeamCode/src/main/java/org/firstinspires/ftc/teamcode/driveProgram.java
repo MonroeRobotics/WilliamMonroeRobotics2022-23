@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
@@ -353,10 +354,10 @@ public class driveProgram extends LinearOpMode {
 
             //region Setting Motors
             if (bLeft > 0){
-                backLeft.setDirection(DcMotor.Direction.FORWARD);
+                backLeft.setDirection(DcMotor.Direction.REVERSE);
             }
             else {
-                backLeft.setDirection(DcMotor.Direction.REVERSE);
+                backLeft.setDirection(DcMotor.Direction.FORWARD);
             }
             if (bRight > 0){
                 backRight.setDirection(DcMotor.Direction.FORWARD);
