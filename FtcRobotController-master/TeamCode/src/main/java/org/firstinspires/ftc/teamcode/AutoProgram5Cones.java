@@ -611,11 +611,11 @@ public class AutoProgram5Cones extends OpMode {
                     leftSlide.setTargetPosition(0);
                     clawServo.setPosition(servoOpenPos);
                     park1 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                            .lineToConstantHeading(new Vector2d(12, -12))
+                            .lineToConstantHeading(new Vector2d(9, -12))
                             .build();
 
                     park2 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                            .lineToConstantHeading(new Vector2d(36, -12))
+                            .lineToConstantHeading(new Vector2d(33, -12))
                             .build();
                     switch (colorDetected) {
                         case "M":
