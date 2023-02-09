@@ -95,8 +95,8 @@ public class driveProgram extends LinearOpMode {
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        rightSlide.setTargetPosition(10);
-        leftSlide.setTargetPosition(10);
+        rightSlide.setTargetPosition(40);
+        leftSlide.setTargetPosition(40);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.5);
@@ -168,7 +168,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 25;
+                    slideTarget = 40;
                 }
             }
             else if (gamepad2.dpad_down && slidePos > 0 && !dPSlide && slideTimer < System.currentTimeMillis()){
@@ -184,7 +184,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 25;
+                    slideTarget = 40;
                 }
             }
             else if (!gamepad2.dpad_down && !gamepad2.dpad_up){
