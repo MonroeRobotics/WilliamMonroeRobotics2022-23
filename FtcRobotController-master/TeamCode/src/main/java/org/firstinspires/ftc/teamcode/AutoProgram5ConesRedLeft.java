@@ -62,15 +62,15 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name = "Auto Program 1 + 5 Epic Auto", group = "Main")
+@Autonomous(name = "Auto Program 1 + 5 Epic Auto Red Left", group = "Main")
 
-public class AutoProgram5Cones extends OpMode {
+public class AutoProgram5ConesRedLeft extends OpMode {
 
     //region Variable Declaration
     SampleMecanumDrive drive;
 
     ColorSensor colorSensor;
-    int red;
+    int blue;
 
     TrajectorySequence firstToJunc;
     TrajectorySequence firstToCone;
@@ -183,12 +183,12 @@ public class AutoProgram5Cones extends OpMode {
 
         double wOffset = targetWidth - coneWidth;
 
-        if (red >= 200){
+        if (blue >= 200){
             clawServo.setPosition(servoClosedPos);
             isConeHoming = false;
             drive.setDrivePower(new Pose2d(0, 0, 0));
             drive.update();
-            conePose = new Pose2d(drive.getPoseEstimate().getX(), drive.getPoseEstimate().getY() + 1, Math.toRadians(0));
+            conePose = new Pose2d(drive.getPoseEstimate().getX(), drive.getPoseEstimate().getY() + 1, Math.toRadians(180));
 
             waitTime = System.currentTimeMillis() + 700;
             waitTime2 = waitTime + 300;
@@ -416,16 +416,16 @@ public class AutoProgram5Cones extends OpMode {
 
         drive = new SampleMecanumDrive(hardwareMap);
 
-        drive.setPoseEstimate(new Pose2d(36, -63.96875, Math.toRadians(270.0)));
+        drive.setPoseEstimate(new Pose2d(-36, -63.96875, Math.toRadians(270)));
 
-        conePush = drive.trajectorySequenceBuilder(new Pose2d(36, -63.96875, Math.toRadians(270.0)))
+        conePush = drive.trajectorySequenceBuilder(new Pose2d(-36, -63.96875, Math.toRadians(270)))
                 .addDisplacementMarker(() -> {
                     colorDetected = colorDetectString;
                     telemetry.addData("color", colorDetectString);
                     telemetry.update();
                 })
                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
-                .lineToConstantHeading(new Vector2d(35.90, -6))
+                .lineToConstantHeading(new Vector2d(-35.90, -6))
                 .build();
 
         while(colorSensor.red() < 200){
@@ -449,7 +449,7 @@ public class AutoProgram5Cones extends OpMode {
 
         }
 
-        red = colorSensor.red();
+        blue = colorSensor.blue();
 
         if(!parkSetup){
             parkTimer = System.currentTimeMillis() + 26500;
@@ -463,7 +463,7 @@ public class AutoProgram5Cones extends OpMode {
                         leftArmServo.setPosition(0);
                         rightArmServo.setPosition(1);
                     })
-                    .lineToLinearHeading(new Pose2d(60, -12, Math.toRadians(0.00)))
+                    .lineToLinearHeading(new Pose2d(-60, -12, Math.toRadians(180)))
                     .addTemporalMarker(0.4, () -> {
                         rightSlide.setTargetPosition(0);
                         leftSlide.setTargetPosition(0);
@@ -490,7 +490,7 @@ public class AutoProgram5Cones extends OpMode {
                             })
                             .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(50, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
                             .setAccelConstraint(SampleMecanumDrive.getAccelerationConstraint(50))
-                            .lineToLinearHeading(new Pose2d(34, -13.93, 225))
+                            .lineToLinearHeading(new Pose2d(-34, -13.93, Math.toRadians(225)))
                             .build();
 
                     drive.followTrajectorySequenceAsync(firstToJunc);
@@ -514,7 +514,7 @@ public class AutoProgram5Cones extends OpMode {
                     firstToCone = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                             .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(45, Math.toRadians(50), DriveConstants.TRACK_WIDTH))
                             .setAccelConstraint(SampleMecanumDrive.getAccelerationConstraint(45))
-                            .lineToSplineHeading(new Pose2d(44.64, -13.29, Math.toRadians(0.00)))
+                            .lineToSplineHeading(new Pose2d(-44.64, -13.29, Math.toRadians(180)))
                             .addDisplacementMarker(() -> {
                                 leftArmServo.setPosition(0);
                                 rightArmServo.setPosition(1);
@@ -548,7 +548,7 @@ public class AutoProgram5Cones extends OpMode {
                         toJunc2 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(DriveConstants.MAX_VEL, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
                                 .setAccelConstraint(SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
-                                .lineToLinearHeading(new Pose2d(58, -16, Math.toRadians(45)))
+                                .lineToLinearHeading(new Pose2d(-58, -16, Math.toRadians(135)))
                                 .addTemporalMarker(0.2, () -> {
                                     rightSlide.setTargetPosition(185);
                                     leftSlide.setTargetPosition(185);
@@ -614,14 +614,15 @@ public class AutoProgram5Cones extends OpMode {
                     rightSlide.setTargetPosition(0);
                     leftSlide.setTargetPosition(0);
                     clawServo.setPosition(servoOpenPos);
-                    park1 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                            .lineToConstantHeading(new Vector2d(15, -12))
+
+                    park3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                            .lineToConstantHeading(new Vector2d(-16, -12))
                             .build();
 
                     park2 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                            .lineToConstantHeading(new Vector2d(39, -12))
+                            .lineToConstantHeading(new Vector2d(-39, -12))
                             .build();
-                    park3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
+                    park1 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                             .lineToLinearHeading(conePose)
                             .build();
 

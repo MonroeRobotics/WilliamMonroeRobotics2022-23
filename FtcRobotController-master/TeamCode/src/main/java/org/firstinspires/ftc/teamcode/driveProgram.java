@@ -38,6 +38,9 @@ public class driveProgram extends LinearOpMode {
 
         double waitTime = 0;
 
+        boolean autoClosedEnabled = true;
+        boolean xyCheck = false;
+
         boolean dPSlide = false;
         boolean dPArm = false;
         boolean bumper = false;
@@ -226,19 +229,21 @@ public class driveProgram extends LinearOpMode {
 
             //region Claw Servo Movement
 
-            if (blue > 200 && !isClosed && waitTime < System.currentTimeMillis()) {
-                gamepad1.rumble(250);
-                gamepad2.rumble(250);
-                isClosed = true;
-                clawServo.setPosition(.38);
-                slideTimer = System.currentTimeMillis() + 200;
-            }
-            if (red > 200 && !isClosed && waitTime < System.currentTimeMillis()) {
-                gamepad1.rumble(250);
-                gamepad2.rumble(250);
-                isClosed = true;
-                clawServo.setPosition(.38);
-                slideTimer = System.currentTimeMillis() + 200;
+            if(autoClosedEnabled && !isClosed && waitTime < System.currentTimeMillis()) {
+                if (blue > 200) {
+                    gamepad1.rumble(250);
+                    gamepad2.rumble(250);
+                    isClosed = true;
+                    clawServo.setPosition(.38);
+                    slideTimer = System.currentTimeMillis() + 200;
+                }
+                if (red > 200) {
+                    gamepad1.rumble(250);
+                    gamepad2.rumble(250);
+                    isClosed = true;
+                    clawServo.setPosition(.38);
+                    slideTimer = System.currentTimeMillis() + 200;
+                }
             }
 
             if (gamepad2.a){
@@ -256,6 +261,18 @@ public class driveProgram extends LinearOpMode {
                     isClosed = true;
                     buttonPress = true;
                     slideTimer = System.currentTimeMillis() + 200;
+                }
+            }
+            else if (gamepad2.x){
+                if(!buttonPress){
+                    buttonPress = true;
+                    autoClosedEnabled = false;
+                }
+            }
+            else if (gamepad2.y){
+                if(!buttonPress){
+                    buttonPress = true;
+                    autoClosedEnabled = true;
                 }
             }
             else{
