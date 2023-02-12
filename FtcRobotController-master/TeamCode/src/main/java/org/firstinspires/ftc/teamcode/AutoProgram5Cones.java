@@ -15,7 +15,7 @@
  * promote products derived from this software without specific prior written permission.
  *
  * NO EXPRESS OR IMPLIED LICENSES TO ANY PARTY'S PATENT RIGHTS ARE GRANTED BY THIS
- * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * LICENSE. THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTrs
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
  * THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
  * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
@@ -69,12 +69,14 @@ public class AutoProgram5Cones extends OpMode {
     //region Variable Declaration
     SampleMecanumDrive drive;
 
+
     ColorSensor colorSensor;
     int red;
 
     TrajectorySequence firstToJunc;
     TrajectorySequence firstToCone;
     TrajectorySequence conePush;
+
 
 
     TrajectorySequence toJunc;
@@ -116,7 +118,6 @@ public class AutoProgram5Cones extends OpMode {
 
     String colorDetectString = "";
     String colorDetected = "";
-
 
     int coneCount = 0;
 
@@ -313,6 +314,7 @@ public class AutoProgram5Cones extends OpMode {
             homed = true;
             currentTime = System.currentTimeMillis();
             waitTime = System.currentTimeMillis() + 500.0;
+            
             waitTime2 = waitTime + 200;
             if(currentState == State.START_SECOND_HOME){
                 currentState = State.TO_CONE;
@@ -350,6 +352,7 @@ public class AutoProgram5Cones extends OpMode {
 
         leftArmServo.setPosition(0);
         rightArmServo.setPosition(1);
+
 
 
 
@@ -418,12 +421,15 @@ public class AutoProgram5Cones extends OpMode {
 
         drive.setPoseEstimate(new Pose2d(36, -61.96875, Math.toRadians(270.0)));
 
+
         conePush = drive.trajectorySequenceBuilder(new Pose2d(36, -61.96875, Math.toRadians(270.0)))
+
                 .addDisplacementMarker(() -> {
                     colorDetected = colorDetectString;
                     telemetry.addData("color", colorDetectString);
                     telemetry.update();
                 })
+
                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(45, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
                 .lineToConstantHeading(new Vector2d(35.90, -6))
                 .build();
@@ -443,6 +449,7 @@ public class AutoProgram5Cones extends OpMode {
     }
 
     public void loop(){
+
 
         if(!isHoming) {
             drive.update();
@@ -477,6 +484,7 @@ public class AutoProgram5Cones extends OpMode {
 
         label:
         switch (currentState) {
+
             case FIRST_TO_JUNC:
                 if(!drive.isBusy()){
                     firstToJunc = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
@@ -531,6 +539,7 @@ public class AutoProgram5Cones extends OpMode {
                 break;
             case START_CONE_HOME:
                 if(!drive.isBusy()) {
+
                     clawServo.setPosition(servoOpenPos);
                     isConeHoming = true;
                     currentState = State.HOMING;
@@ -540,6 +549,7 @@ public class AutoProgram5Cones extends OpMode {
             case SECOND_TO_JUNC:
 
                 if(System.currentTimeMillis() > waitTime2) {
+
 
                 }
 
@@ -585,6 +595,7 @@ public class AutoProgram5Cones extends OpMode {
                                 .build();
                         currentState = State.TO_CONE;
                         drive.followTrajectorySequenceAsync(toJunc);
+
                     }
                 }
                 break;
