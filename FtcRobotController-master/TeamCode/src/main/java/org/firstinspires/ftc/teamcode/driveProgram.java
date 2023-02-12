@@ -38,6 +38,9 @@ public class driveProgram extends LinearOpMode {
 
         double waitTime = 0;
 
+        boolean autoClosedEnabled = true;
+        boolean xyCheck = false;
+
         boolean dPSlide = false;
         boolean dPArm = false;
         boolean bumper = false;
@@ -85,7 +88,7 @@ public class driveProgram extends LinearOpMode {
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
         //slide init homing
-        while(!limit.isPressed() && (!gamepad2.start && !gamepad1.start) ){
+        while(!limit.isPressed() && (!gamepad2.start && !gamepad1.start) && slideTarget < 100){
             slideTarget ++;
             rightSlide.setTargetPosition(slideTarget);
             leftSlide.setTargetPosition(slideTarget);
@@ -95,8 +98,8 @@ public class driveProgram extends LinearOpMode {
         rightSlide.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 
-        rightSlide.setTargetPosition(10);
-        leftSlide.setTargetPosition(10);
+        rightSlide.setTargetPosition(40);
+        leftSlide.setTargetPosition(40);
         rightSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         leftSlide.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         rightSlide.setPower(0.5);
@@ -168,7 +171,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 25;
+                    slideTarget = 40;
                 }
             }
             else if (gamepad2.dpad_down && slidePos > 0 && !dPSlide && slideTimer < System.currentTimeMillis()){
@@ -184,7 +187,7 @@ public class driveProgram extends LinearOpMode {
                     slideTarget = 150;
                 }
                 else if (slidePos == 0) {
-                    slideTarget = 25;
+                    slideTarget = 40;
                 }
             }
             else if (!gamepad2.dpad_down && !gamepad2.dpad_up){
@@ -226,19 +229,21 @@ public class driveProgram extends LinearOpMode {
 
             //region Claw Servo Movement
 
-            if (blue > 200 && !isClosed && waitTime < System.currentTimeMillis()) {
-                gamepad1.rumble(250);
-                gamepad2.rumble(250);
-                isClosed = true;
-                clawServo.setPosition(.38);
-                slideTimer = System.currentTimeMillis() + 200;
-            }
-            if (red > 200 && !isClosed && waitTime < System.currentTimeMillis()) {
-                gamepad1.rumble(250);
-                gamepad2.rumble(250);
-                isClosed = true;
-                clawServo.setPosition(.38);
-                slideTimer = System.currentTimeMillis() + 200;
+            if(autoClosedEnabled && !isClosed && waitTime < System.currentTimeMillis()) {
+                if (blue > 200) {
+                    gamepad1.rumble(250);
+                    gamepad2.rumble(250);
+                    isClosed = true;
+                    clawServo.setPosition(.38);
+                    slideTimer = System.currentTimeMillis() + 200;
+                }
+                if (red > 200) {
+                    gamepad1.rumble(250);
+                    gamepad2.rumble(250);
+                    isClosed = true;
+                    clawServo.setPosition(.38);
+                    slideTimer = System.currentTimeMillis() + 200;
+                }
             }
 
             if (gamepad2.a){
@@ -258,6 +263,18 @@ public class driveProgram extends LinearOpMode {
                     slideTimer = System.currentTimeMillis() + 200;
                 }
             }
+            else if (gamepad2.x){
+                if(!buttonPress){
+                    buttonPress = true;
+                    autoClosedEnabled = false;
+                }
+            }
+            else if (gamepad2.y){
+                if(!buttonPress){
+                    buttonPress = true;
+                    autoClosedEnabled = true;
+                }
+            }
             else{
                 buttonPress = false;
             }
@@ -269,11 +286,11 @@ public class driveProgram extends LinearOpMode {
 
 
             if(gamepad2.dpad_right && armPos < 2){
-               if(!dPArm) {
-                   armPos++;
-                   dPArm = true;
-                   clawServo.setPosition(.38);
-               }
+                if(!dPArm) {
+                    armPos++;
+                    dPArm = true;
+                    clawServo.setPosition(.38);
+                }
             }
             if(gamepad2.dpad_left && armPos > 0){
                 if(!dPArm) {
@@ -304,7 +321,9 @@ public class driveProgram extends LinearOpMode {
             drive.setWeightedDrivePower(
                     new Pose2d(
                             leftStickY * motorSpeed,
-                            -leftStickX * motorSpeed,
+
+                            leftStickX * motorSpeed,
+
                             -turn * motorSpeed
                     )
             );
