@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode;
 import static org.opencv.imgproc.Imgproc.MORPH_OPEN;
 import static org.opencv.imgproc.Imgproc.MORPH_RECT;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.roadrunner.geometry.Pose2d;
 import com.acmerobotics.roadrunner.geometry.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -62,12 +63,26 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Autonomous(name = "Auto Program 1 + 5 Epic Red Auto", group = "Main")
+@Config
 
-public class AutoProgram5Cones extends OpMode {
+//@Autonomous(name = "Auto Program 1 + 5 Epic Blue Auto", group = "Main")
+
+public class AutoProgram5ConesBlue extends OpMode {
 
     //region Variable Declaration
     SampleMecanumDrive drive;
+
+
+    public static double HIGH_H = 192;
+    public static double HIGH_S = 255;
+    public static double HIGH_V = 255;
+
+    public static double LOW_H = 140;
+    public static double LOW_S = 20;
+    public static double LOW_V = 20;
+
+    private static final Scalar lowBlueHSV = new Scalar(HIGH_H, HIGH_S, HIGH_V);
+    private static final Scalar highBlueHSV = new Scalar(LOW_H, LOW_S, LOW_V);
 
     ColorSensor colorSensor;
     int red;
@@ -452,7 +467,7 @@ public class AutoProgram5Cones extends OpMode {
         red = colorSensor.red();
 
         if(!parkSetup){
-            parkTimer = System.currentTimeMillis() + 26000;
+            parkTimer = System.currentTimeMillis() + 26500;
             parkSetup = true;
         }
         else if(currentState != State.IDLE && currentState != State.PARK && parkTimer < System.currentTimeMillis()){
@@ -521,8 +536,8 @@ public class AutoProgram5Cones extends OpMode {
                                 clawServo.setPosition(servoClosedPos);
                             })
                             .addTemporalMarker(.5, () -> {
-                                rightSlide.setTargetPosition(220);
-                                leftSlide.setTargetPosition(220);
+                                rightSlide.setTargetPosition(240);
+                                leftSlide.setTargetPosition(240);
                             })
                             .build();
                     currentState = State.START_CONE_HOME;
@@ -540,7 +555,8 @@ public class AutoProgram5Cones extends OpMode {
             case SECOND_TO_JUNC:
 
                 if(System.currentTimeMillis() > waitTime2) {
-
+                    rightSlide.setTargetPosition(350);
+                    leftSlide.setTargetPosition(350);
                 }
 
                 if(System.currentTimeMillis() > waitTime) {
@@ -548,11 +564,7 @@ public class AutoProgram5Cones extends OpMode {
                                 .setVelConstraint(SampleMecanumDrive.getVelocityConstraint(DriveConstants.MAX_VEL, DriveConstants.MAX_ANG_VEL, DriveConstants.TRACK_WIDTH))
                                 .setAccelConstraint(SampleMecanumDrive.getAccelerationConstraint(DriveConstants.MAX_ACCEL))
                                 .lineToLinearHeading(new Pose2d(58, -16, Math.toRadians(45)))
-                                .addTemporalMarker(0.1, () -> {
-                                    rightSlide.setTargetPosition(350);
-                                    leftSlide.setTargetPosition(350);
-                                })
-                                .addTemporalMarker(0.4, () -> {
+                                .addTemporalMarker(0.2, () -> {
                                     rightSlide.setTargetPosition(185);
                                     leftSlide.setTargetPosition(185);
                                     leftArmServo.setPosition(.75);
@@ -599,8 +611,8 @@ public class AutoProgram5Cones extends OpMode {
                                     clawServo.setPosition(servoOpenPos);
                                     leftArmServo.setPosition(0);
                                     rightArmServo.setPosition(1);
-                                    rightSlide.setTargetPosition(220 - (40 * coneCount));
-                                    leftSlide.setTargetPosition(220 - (40 * coneCount));
+                                    rightSlide.setTargetPosition(240 - (40 * coneCount));
+                                    leftSlide.setTargetPosition(240 - (40 * coneCount));
                                     waitTime = System.currentTimeMillis() + 2000;
                                 })
                                 .build();
@@ -618,11 +630,11 @@ public class AutoProgram5Cones extends OpMode {
                     leftSlide.setTargetPosition(0);
                     clawServo.setPosition(servoOpenPos);
                     park1 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                            .lineToConstantHeading(new Vector2d(15, -14))
+                            .lineToConstantHeading(new Vector2d(15, -12))
                             .build();
 
                     park2 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
-                            .lineToConstantHeading(new Vector2d(37, -14))
+                            .lineToConstantHeading(new Vector2d(39, -12))
                             .build();
                     park3 = drive.trajectorySequenceBuilder(drive.getPoseEstimate())
                             .lineToLinearHeading(conePose)
@@ -809,10 +821,7 @@ public class AutoProgram5Cones extends OpMode {
         public Mat processFrame(Mat input){
             Imgproc.cvtColor(input, HSV, Imgproc.COLOR_RGB2HSV);
 
-            Scalar lowHSV = new Scalar(162,40,40);
-            Scalar highHSV = new Scalar(190,255,255);
-
-            Core.inRange(HSV, lowHSV, highHSV, thresh);
+            Core.inRange(HSV, lowBlueHSV, highBlueHSV, thresh);
 
             Rect leftRect = new Rect(leftTargetCone, 140, 1, 79);
             Rect rightRect = new Rect(rightTargetCone, 140, 1, 79);

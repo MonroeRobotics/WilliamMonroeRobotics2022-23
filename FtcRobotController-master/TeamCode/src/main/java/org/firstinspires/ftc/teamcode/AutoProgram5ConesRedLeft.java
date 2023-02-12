@@ -416,9 +416,9 @@ public class AutoProgram5ConesRedLeft extends OpMode {
 
         drive = new SampleMecanumDrive(hardwareMap);
 
-        drive.setPoseEstimate(new Pose2d(-36, -63.96875, Math.toRadians(270)));
+        drive.setPoseEstimate(new Pose2d(-36, -61.96875, Math.toRadians(270)));
 
-        conePush = drive.trajectorySequenceBuilder(new Pose2d(-36, -63.96875, Math.toRadians(270)))
+        conePush = drive.trajectorySequenceBuilder(new Pose2d(-36, -61.96875, Math.toRadians(270)))
                 .addDisplacementMarker(() -> {
                     colorDetected = colorDetectString;
                     telemetry.addData("color", colorDetectString);

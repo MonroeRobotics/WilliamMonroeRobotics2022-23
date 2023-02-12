@@ -64,7 +64,6 @@ import org.openftc.easyopencv.OpenCvWebcam;
 import java.util.ArrayList;
 import java.util.List;
 
-@Disabled
 @Autonomous(name = "Auto Program Simple Right", group = "Main")
 
 public class AutoProgramSimpleRight extends OpMode {
